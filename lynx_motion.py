@@ -2,7 +2,7 @@ from ssc32 import *
 from time import sleep
 from smooth import getPositions
 # Run with sudo
-ssc = SSC32('COM4', 115200)
+ssc = SSC32('COM3', 115200)
 ssc[0].degrees = 20
 ssc[0].max = 2500
 ssc[0].min = 500
