@@ -4,6 +4,7 @@ import numpy as np
 class ColorMatcher(object):
 
     pahar_mare_rosu = (140, 180)
+    pahar_mare_mov = (120, 200)
     pahar_mare_albastru = (90, 120)
     pahar_mic_rosu = (140, 180)
    
@@ -34,7 +35,7 @@ class ColorMatcher(object):
         # Convert BGR to HSV
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        h, s, v = self.color[0], 100, 100
+        h, s, v = self.color[0], 50, 50
         h2, s2, v2 = self.color[1], 255, 255
         
         lower_range = np.array([h,s,v])
@@ -50,7 +51,8 @@ class ColorMatcher(object):
         res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel, iterations=iterations)
 
         grey = cv2.cvtColor(res, cv2.COLOR_RGB2GRAY)
-        image, contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        #image, contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
         big_contours = []
         for cnt in contours:
