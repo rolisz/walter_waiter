@@ -12,7 +12,7 @@ Created on Sat Jan 25 12:36:14 2014
 
 import math
 
-def get_angle_from_pixels(x_px, axis_size=640, axis_fov = 60.0):
+def get_angle_from_pixels(x_px, axis_size=640, axis_fov = 40.0):
     '''
     Gets the angle from the image coordinates
     Assumes pixels are linearly proportional to angle
@@ -33,10 +33,9 @@ def get_angle_from_pixels(x_px, axis_size=640, axis_fov = 60.0):
     return (x_px/float(axis_size) - 0.5) * axis_fov
 
 
-def get_distance_from_cup_width(cup_width_px, axis_width=640, axis_fov=60):
+def get_distance_from_cup_width(cup_width_px, axis_width=640, axis_fov=40):
     '''
     Custom function to detect the distance cup (in mm)
-    Axis FOV is ignored, we only have data for our camera
     
     >>> '%.5f'% get_distance_from_cup_width(363.4)
     '205.10687'
@@ -47,12 +46,10 @@ def get_distance_from_cup_width(cup_width_px, axis_width=640, axis_fov=60):
     >>> '%.5f'% get_distance_from_cup_width(46, 320)
     '845.43274'
     
-    >>> '%.5f'% get_distance_from_cup_width(92, 320, 30)
-    '845.43274'
     
     '''
     
-    return 78.0/math.tan(cup_width_px*(0.64/axis_width) * (axis_fov/60.0))
+    return 78.0/math.tan(cup_width_px*(0.64/axis_width) * (axis_fov/40.0))
     
 def get_coords(distance, x_angle, y_angle):
     '''
@@ -86,15 +83,15 @@ def get_coords(distance, x_angle, y_angle):
     
     return (x, y, z)
 
-def pixels2coords(x_px, y_px, cup_width_px, size=(480,640), hfov=60):
+def pixels2coords(x_px, y_px, cup_width_px, size=(480,640), hfov=40):
     '''
     Convert pixel coordinates to our cup's position
     
-    >>> '%.2f %.2f %.2f' % pixels2coords(320, 240, 298)
-    '253.95 0.00 0.00'
+    >>> '%.2f %.2f %.2f' % pixels2coords(320, 240, 298, hfov=60)
+    '162.72 0.00 0.00'
     
     >>> '%.2f %.2f %.2f' % pixels2coords(0, 240, 149, hfov=120)
-    '253.95 0.00 0.00'
+    '81.36 -140.92 0.00'
     
     '''
     
