@@ -96,7 +96,8 @@ def pixels2coords(x_px, y_px, cup_width_px, size=(480,640), hfov=40):
     '''
     
     #TODO: test!!!
-    distance = get_distance_from_cup_width(cup_width_px, size[1], hfov)
+    print size[1]
+    distance = get_distance_from_cup_width(cup_width_px, axis_width=size[1], axis_fov=hfov)
     x_angle = get_angle_from_pixels(x_px, size[1], hfov)
     # We assume pixels are square:
     y_angle = get_angle_from_pixels(y_px, size[0], hfov*size[0]/float(size[1]))
