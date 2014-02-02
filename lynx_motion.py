@@ -5,7 +5,7 @@ from smooth import getPositions
 #ssc = SSC32('COM3', 115200)
 class Arm:
     def __init__(self):
-        self.ssc = SSC32('/dev/ttyUSB0', 115200)
+        self.ssc = SSC32('COM5', 115200)
         self.ssc[0].degrees = 20
         self.ssc[0].max = 2500
         self.ssc[0].min = 500
@@ -37,9 +37,9 @@ class Arm:
         vals = [v0, v1, v2]
         
         for motor, degree in enumerate(vals):
-            if motor == 1:
-                degree *= -1        
-                degree += 50
+            # if motor == 1:
+            #     degree *= -1        
+            #     degree += 50
             self.moveTo(self.ssc, motor, 1, degree, False)
             #sleep(0.1)
 a = Arm()

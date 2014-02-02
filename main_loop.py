@@ -8,14 +8,14 @@ from get_angles import get_angles
 import lynx_motion
 
 cv2.namedWindow('image')
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 cap.set(3,1280)
 cap.set(4,1024)
 
 blue_cup = ColorMatcher('pahar_mare_mov')
 l = lynx_motion.Arm()
 while(cap.isOpened()):
-
+    print "bloody loop"
     # Take each frame
     #sleep(1)
     _, frame = cap.read()
@@ -28,7 +28,7 @@ while(cap.isOpened()):
         cv2.putText(frame, dist, (x, y-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), thickness=2)
 
         angles = get_angles(coords[0], -coords[1])
-        #sleep(0.1)
+        sleep(0.1)
         l.setAngles(*angles)
         
         

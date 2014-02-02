@@ -52,7 +52,7 @@ class ColorMatcher(object):
 
         grey = cv2.cvtColor(res, cv2.COLOR_RGB2GRAY)
         #image, contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        image, contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
         big_contours = []
         for cnt in contours:

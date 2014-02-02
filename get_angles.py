@@ -8,11 +8,12 @@ r1 = 120
 r2 = 120
 r3 = 150
 
-constraints = {'a1': [-pi/2, pi/2], 'a2': [-pi/8, pi/2], 'a3':[-pi/4, pi/4]}
-
+delta = -2
+constraints = {'a1': [-pi/2, pi/2], 'a2': [-pi/2, pi/9], 'a3':[-pi/4, pi/4]}
 
 def f(a1, a2, a3):
     # X is the direction in front
+    a2 = delta - a2
     return r1*cos(a1) + r2*cos(a1+a2) + r3*cos(a1+a2+a3), r1*sin(a1) + r2*sin(a1+a2) + r3*sin(a1+a2+a3)
     
 

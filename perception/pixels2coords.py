@@ -49,7 +49,7 @@ def get_distance_from_cup_width(cup_width_px, axis_width=640, axis_fov=40):
     
     '''
     
-    return 78.0/math.tan(cup_width_px*(0.64/axis_width) * (axis_fov/40.0))
+    return 78.0/math.tan(cup_width_px*(0.64/axis_width) * (axis_fov/40.0)) * 2
     
 def get_coords(distance, x_angle, y_angle):
     '''
