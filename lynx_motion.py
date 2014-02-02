@@ -44,6 +44,6 @@ class Arm:
             #sleep(0.1)
 a = Arm()
 #a.setAngles(-86.5, 90, 45) # 20cm
-a.setAngles(0, 1, 2) # 30cm
+a.setAngles(0, -85, 0) # 30cm
 
 a.ssc.close()

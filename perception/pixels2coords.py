@@ -12,7 +12,7 @@ Created on Sat Jan 25 12:36:14 2014
 
 import math
 
-def get_angle_from_pixels(x_px, axis_size=640, axis_fov = 40.0):
+def get_angle_from_pixels(x_px, axis_size=1280, axis_fov = 46.25):
     '''
     Gets the angle from the image coordinates
     Assumes pixels are linearly proportional to angle
@@ -33,7 +33,7 @@ def get_angle_from_pixels(x_px, axis_size=640, axis_fov = 40.0):
     return (x_px/float(axis_size) - 0.5) * axis_fov
 
 
-def get_distance_from_cup_width(cup_width_px, axis_width=640, axis_fov=40):
+def get_distance_from_cup_width(cup_width_px, axis_width=1280, axis_fov=46.25):
     '''
     Custom function to detect the distance cup (in mm)
     
@@ -49,7 +49,7 @@ def get_distance_from_cup_width(cup_width_px, axis_width=640, axis_fov=40):
     
     '''
     
-    return 78.0/math.tan(cup_width_px*(0.64/axis_width) * (axis_fov/40.0)) * 2
+    return 114657.6/float(cup_width_px)
     
 def get_coords(distance, x_angle, y_angle):
     '''
@@ -77,13 +77,13 @@ def get_coords(distance, x_angle, y_angle):
     psi =  float(x_angle) * math.pi/180.0
     r = float(distance)
 
-    x = r * math.cos(theta) * math.cos(psi)
-    y = r * math.cos(theta) * math.sin(psi)
+    x = r * math.cos(theta) * math.cos(psi) - 50 # camera is 50mm behind arm
+    y = r * math.cos(theta) * math.sin(psi) #- 90
     z = r * math.sin(theta)
     
     return (x, y, z)
 
-def pixels2coords(x_px, y_px, cup_width_px, size=(480,640), hfov=40):
+def pixels2coords(x_px, y_px, cup_width_px, size=(1024,1280), hfov=46.25):
     '''
     Convert pixel coordinates to our cup's position
     
