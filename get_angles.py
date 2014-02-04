@@ -1,18 +1,19 @@
 import numpy as np
-from math import sin, cos, sqrt, pi
+from math import sin, cos, sqrt, pi, radians
 import scipy.optimize
 from time import time
 import random
 
-r1 = 120
-r2 = 120
+r1 = 121
+r2 = 125
 r3 = 150
 
-constraints = {'a1': [-pi/2, pi/2], 'a2': [-pi/8, pi/2], 'a3':[-pi/4, pi/4]}
-
+delta = -2
+constraints = {'a1': [radians(-85), radians(77)], 'a2': [radians(-90), radians(30)], 'a3':[radians(-77), radians(62)]}
 
 def f(a1, a2, a3):
     # X is the direction in front
+    a2 = delta - a2
     return r1*cos(a1) + r2*cos(a1+a2) + r3*cos(a1+a2+a3), r1*sin(a1) + r2*sin(a1+a2) + r3*sin(a1+a2+a3)
     
 

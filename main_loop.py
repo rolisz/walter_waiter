@@ -71,4 +71,3 @@ _, frame = cap.read()
 
 cap.release()
 cv2.destroyAllWindows()
-
