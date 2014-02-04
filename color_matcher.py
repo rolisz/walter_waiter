@@ -52,7 +52,7 @@ class ColorMatcher(object):
 
         grey = cv2.cvtColor(res, cv2.COLOR_RGB2GRAY)
         #image, contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        image, contours, hierarchy = cv2.findContours(grey,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
         big_contours = []
         for cnt in contours:
@@ -79,10 +79,10 @@ class ColorMatcher(object):
 
             big_contours = []
             for cg in contour_groups:
-                minX = min(x[0] for x in cg) - 5
-                maxX = max(x[2] for x in cg) + 5
-                minY = min(x[1] for x in cg) -5
-                maxY = max(x[3] for x in cg) +5
+                minX = max(min(x[0] for x in cg) - 10, 0)
+                maxX = min(max(x[2] for x in cg) + 10, image.shape[1])
+                minY = max(min(x[1] for x in cg) - 10, 0)
+                maxY = min(max(x[3] for x in cg) + 10, image.shape[0])
                 big_contours.append((minX, minY, maxX, maxY))
 
         return big_contours

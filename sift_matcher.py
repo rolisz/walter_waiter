@@ -32,6 +32,7 @@ class SIFTMatcher(object):
                 good.append(m)
 
         print "Matches are found - %d/%d" % (len(good), self.min_count)
+        return len(good)
         if len(good) > self.min_count:
             src_pts = np.float32([ self.kp[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
             dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)

@@ -4,8 +4,8 @@ from smooth import getPositions
 # Run with sudo
 #ssc = SSC32('COM3', 115200)
 class Arm:
-    def __init__(self):
-        self.ssc = SSC32('/dev/ttyUSB0', 115200)
+    def __init__(self, usb='/dev/ttyUSB0'):
+        self.ssc = SSC32(usb, 115200)
         self.ssc[0].degrees = 20
         self.ssc[0].max = 2500
         self.ssc[0].min = 500
@@ -42,8 +42,4 @@ class Arm:
                 degree += 50
             self.moveTo(self.ssc, motor, 1, degree, False)
             #sleep(0.1)
-a = Arm()
-#a.setAngles(-86.5, 90, 45) # 20cm
-a.setAngles(0, 1, 2) # 30cm
 
-a.ssc.close()
