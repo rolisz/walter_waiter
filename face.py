@@ -1,71 +1,142 @@
 import numpy as np
+import itertools
 import cv2
 import random
 from time import sleep
-cap = cv2.VideoCapture(0)
-face_cascade = cv2.CascadeClassifier("D:\opencv\data\haarcascades\haarcascade_frontalface_default.xml")
+import os
+import math
 
-
-face = None
-
-while True:
-
-    # Take each frame
-    _, frame = cap.read()
+def distance_between_faces(face1, face2):
+    x1, y1, w1, h1 = face1
+    x2, y2, w2, h2 = face2
+    return math.sqrt((x1 + w1/2.0  - x2 - w2/2.0)**2+(y1 + h1/2.0 - y2 - h2/2.0)**2)
     
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    for (x,y,w,h) in faces:
-        cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+def distance_to_center(face, size=(640, 480)):
+    """
+    Get the distance from the center of the faces bounding box to the center of the image.
+    
+    >>> distance_to_center((270, 200, 20, 20))
+    50.0
+    
+    >>> distance_to_center((310, 230, 20, 20))
+    0.0
 
-    if len(faces) > 0:
-        face = random.choice(faces)
-        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
-        cv2.imshow('frame', frame)
-        sleep(2)
-        break
+    >>> distance_to_center((310, 230, 20, 20), (1024, 768))
+    240.0
+    """
+    x, y, w, h = face
+    c_x, c_y = x+w/2.0, y+h/2.0
+    return math.sqrt((c_x - size[0]/2.0)**2+(c_y - size[1]/2.0)**2)
+    
+def common_area(face1, face2):
+    """
+    Calculate the percentage of common area for two bounding boxes. Should be 0 for completely different bounding boxes, 1 for the same.
+    
+    >>> common_area((100, 200, 300, 400), (100, 200, 300, 400))
+    1.0
+    
+    >>> common_area((1, 2, 3, 4), (6, 7, 8, 9))
+    0.0
+    
+    >>> common_area((100, 100, 100, 100), (150, 100, 100, 100))
+    0.5
+    
+    >>> round(common_area((100, 100, 100, 100), (150, 100, 100, 200)), 4)
+    0.3333
+    """
+    area = (face1[2]*face1[3] + face2[2]*face2[3])/2.0
+    left = max(face1[0], face2[0])
+    right = min(face1[0] + face1[2], face2[0]+face2[2])
+    top = max(face1[1], face2[1])
+    bottom = min(face1[1]+face1[3], face2[1]+face2[3])
+    if left < right and top < bottom:
+        return (right - left)*(bottom-top)/area
+    return 0.0
+    
+    
+def read_cam():
+    cap = cv2.VideoCapture(0)
+    #
+    #   If this script doesn't work, first check if the paths to the Haar cascades are correct. By default they work on my computer.
+    # On other computers they can be overwritten by setting the env variables FACE_HAAR and PROFILE_HAAR to the appropiate values.
+    #
+    face_cascade = cv2.CascadeClassifier(os.getenv('FACE_HAAR', 'D:\opencv\data\haarcascades\haarcascade_frontalface_default.xml'))
+    profile_cascade = cv2.CascadeClassifier(os.getenv('PROFILE_HAAR', "D:\opencv\data\haarcascades\haarcascade_profileface.xml"))
+
+    while True:
+        # Take each frame
+        _, frame = cap.read()
         
-    cv2.imshow('frame', frame)
-    k = cv2.waitKey(5) & 0xFF
-    if k == 27:
-        break
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = list(face_cascade.detectMultiScale(gray, 1.3, 5))
+        face2 = profile_cascade.detectMultiScale(gray, 1.3, 5)
+        faces.extend(face2)
+        for (x,y,w,h) in faces:
+            cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+        yield faces
+        
+        if len(faces) > 0:
+            face = random.choice(faces)
+            cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
+            cv2.imshow('frame', frame)
+            
+        cv2.imshow('frame', frame)
+        
+        k = cv2.waitKey(5) & 0xFF
+        if k == 27:
+            break
+    
+    cv2.destroyAllWindows()
+    cap.release()
 
-
-
-# setup initial location of window
-x, y, w, h = face # simply hardcoded the values
-track_window = (x, y, w, h)
-
-# set up the ROI for tracking
-roi = frame[y:y+h, x:x+w]
-hsv_roi =  cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-mask = cv2.inRange(hsv_roi, np.array((0., 60.,32.)), np.array((180.,255.,255.)))
-roi_hist = cv2.calcHist([hsv_roi],[0],mask,[180],[0,180])
-cv2.normalize(roi_hist,roi_hist,0,255,cv2.NORM_MINMAX)
-
-# Setup the termination criteria, either 10 iteration or move by atleast 1 pt
-term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1)
-
-while(1):
-    ret ,frame = cap.read()
-
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    dst = cv2.calcBackProject([hsv],[0],roi_hist,[0,180],1)
-
-    # apply meanshift to get the new location
-    ret, track_window = cv2.CamShift(dst, track_window, term_crit)
-
-    # Draw it on image
-    pts = cv2.boxPoints(ret)
-    pts = np.int0(pts)
-    img2 = cv2.polylines(frame,[pts],True, 255,2)
-    cv2.imshow('img2',img2)
-
-    k = cv2.waitKey(60) & 0xff
-    if k == 27:
-        break
-
-cv2.destroyAllWindows()
-cap.release()
-
-
+def emit(signal_type, value):
+    print("Emitted %s with value %s" % (signal_type, value))
+    
+def faces():
+    face = None
+    d_c = None
+    
+    i = 2
+    for faces in read_cam():
+        non_dup = set()
+        for f1, f2 in itertools.combinations(faces, 2):
+            if common_area(f1, f2) > 0.5:
+                non_dup.add(tuple(f1))
+            else: 
+                non_dup.add(tuple(f1))
+                non_dup.add(tuple(f2))
+        if len(non_dup) > 0:       
+            faces = non_dup
+        elif len(faces):
+            faces = [tuple(faces[0])]
+            
+        if face is None and len(faces) == 0:
+            sleep(0.2)
+            continue
+        elif len(faces):
+            distances = sorted([(face, distance_to_center(face, (1280, 1024))) for face in faces], key=lambda x:x[1])
+            if face is None:
+                face, d_c = distances[0]
+                emit('face_pos', face)
+                i = 2
+            else:
+                distances = sorted(distances, key=lambda x: distance_between_faces(x[0], face))
+                print(distance_between_faces(face, distances[0][0]))
+                print(face, distances[0][0])
+                if distance_between_faces(face, distances[0][0]) < 50:
+                    emit('face_pos', distances[0][0])
+                    face, d_c = distances[0]
+                    i = 2
+                else:
+                    emit('face_gone1', face)
+        else:
+            if face != None:
+                emit('face_gone2', face)
+                i -= 1
+                if i == 0:
+                    face = None
+                     
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+    faces()
