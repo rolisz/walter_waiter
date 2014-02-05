@@ -42,10 +42,4 @@ class Arm:
             #     degree += 50
             self.moveTo(self.ssc, motor, 1, degree, False)
             #sleep(0.1)
-<<<<<<< HEAD
-=======
-a = Arm()
-#a.setAngles(-86.5, 90, 45) # 20cm
-a.setAngles(0, -85, 0) # 30cm
->>>>>>> e953172dd17791c1a1c73ad8586556ffd9267a66
 
