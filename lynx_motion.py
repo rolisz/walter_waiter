@@ -11,10 +11,10 @@ class Arm:
         self.ssc[0].min = 500
         self.ssc[0].deg_max = +90.0
         self.ssc[0].deg_min = -90.0
-    
+
     #TODO: fix library so it doesn't take 100ms for the first instruction
     # And which overrides the current command even if it has the same targetDegs
-    
+
     def moveTo(self, motor, mi, time, targetDegs, dryRun=True):
         currDegs = motor[mi].degrees
         motor[mi].degrees = targetDegs
@@ -22,8 +22,8 @@ class Arm:
         if not dryRun:
             motor.commit(time*1000)
         print("moved")
-        
-    
+
+
     def smoothMoveTo(self, motor, mi, time, targetDegs, dryRun=True):
         freq = 100.0
         timePerStep = time/freq
@@ -31,14 +31,14 @@ class Arm:
         distToGo = targetDegs - currDegs
         for pos in getPositions(currDegs, targetDegs, freq):
             moveTo(motor, mi, timePerStep, pos, dryRun)
-        
-    
+
+
     def setAngles(self, v0, v1, v2):
         vals = [v0, v1, v2]
-        
+
         for motor, degree in enumerate(vals):
             # if motor == 1:
-            #     degree *= -1        
+            #     degree *= -1
             #     degree += 50
             self.moveTo(self.ssc, motor, 1, degree, False)
             #sleep(0.1)

@@ -228,7 +228,7 @@ class SSC32(object):
         with open(config, 'w') as fd:
             if self.description:
                 fd.write(''.join(
-                    ['#~ ' + line + '\n' for line 
+                    ['#~ ' + line + '\n' for line
                      in self.description.splitlines()]))
             fd.write('# name\t#\tmin\tmax\tmin°\tmax°\n')
             for servo in self._servos:

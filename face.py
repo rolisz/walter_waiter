@@ -10,14 +10,14 @@ def distance_between_faces(face1, face2):
     x1, y1, w1, h1 = face1
     x2, y2, w2, h2 = face2
     return math.sqrt((x1 + w1/2.0  - x2 - w2/2.0)**2+(y1 + h1/2.0 - y2 - h2/2.0)**2)
-    
+
 def distance_to_center(face, size=(640, 480)):
     """
     Get the distance from the center of the faces bounding box to the center of the image.
-    
+
     >>> distance_to_center((270, 200, 20, 20))
     50.0
-    
+
     >>> distance_to_center((310, 230, 20, 20))
     0.0
 
@@ -27,20 +27,20 @@ def distance_to_center(face, size=(640, 480)):
     x, y, w, h = face
     c_x, c_y = x+w/2.0, y+h/2.0
     return math.sqrt((c_x - size[0]/2.0)**2+(c_y - size[1]/2.0)**2)
-    
+
 def common_area(face1, face2):
     """
     Calculate the percentage of common area for two bounding boxes. Should be 0 for completely different bounding boxes, 1 for the same.
-    
+
     >>> common_area((100, 200, 300, 400), (100, 200, 300, 400))
     1.0
-    
+
     >>> common_area((1, 2, 3, 4), (6, 7, 8, 9))
     0.0
-    
+
     >>> common_area((100, 100, 100, 100), (150, 100, 100, 100))
     0.5
-    
+
     >>> round(common_area((100, 100, 100, 100), (150, 100, 100, 200)), 4)
     0.3333
     """
@@ -52,8 +52,8 @@ def common_area(face1, face2):
     if left < right and top < bottom:
         return (right - left)*(bottom-top)/area
     return 0.0
-    
-    
+
+
 def read_cam():
     cap = cv2.VideoCapture(0)
     #
@@ -66,7 +66,7 @@ def read_cam():
     while True:
         # Take each frame
         _, frame = cap.read()
-        
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = list(face_cascade.detectMultiScale(gray, 1.3, 5))
         face2 = profile_cascade.detectMultiScale(gray, 1.3, 5)
@@ -74,42 +74,42 @@ def read_cam():
         for (x,y,w,h) in faces:
             cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
         yield faces
-        
+
         if len(faces) > 0:
             face = random.choice(faces)
             cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
             cv2.imshow('frame', frame)
-            
+
         cv2.imshow('frame', frame)
-        
+
         k = cv2.waitKey(5) & 0xFF
         if k == 27:
             break
-    
+
     cv2.destroyAllWindows()
     cap.release()
 
 def emit(signal_type, value):
     print("Emitted %s with value %s" % (signal_type, value))
-    
+
 def faces():
     face = None
     d_c = None
-    
+
     i = 2
     for faces in read_cam():
         non_dup = set()
         for f1, f2 in itertools.combinations(faces, 2):
             if common_area(f1, f2) > 0.5:
                 non_dup.add(tuple(f1))
-            else: 
+            else:
                 non_dup.add(tuple(f1))
                 non_dup.add(tuple(f2))
-        if len(non_dup) > 0:       
+        if len(non_dup) > 0:
             faces = non_dup
         elif len(faces):
             faces = [tuple(faces[0])]
-            
+
         if face is None and len(faces) == 0:
             sleep(0.2)
             continue
@@ -135,7 +135,7 @@ def faces():
                 i -= 1
                 if i == 0:
                     face = None
-                     
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

@@ -1,8 +1,6 @@
 import numpy as np
 import cv2
-
 from time import time
-
 def slide(image, size, step):
     t = time()
     #@todo
