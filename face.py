@@ -64,6 +64,9 @@ def common_area(face1, face2):
 
 def read_cam(cam):
     cap = cv2.VideoCapture(cam)
+    if cam == 1:
+        cap.set(3, 1280)
+        cap.set(4, 720)
     #
     #   If this script doesn't work, first check if the paths to the Haar
     # cascades are correct. By default they work on my computer.
@@ -80,6 +83,8 @@ def read_cam(cam):
     while True:
         _, frame = cap.read()
 
+        frame = cv2.resize(frame, None, fx=0.5, fy=0.5,
+                           interpolation=cv2.INTER_AREA)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = list(face_cascade.detectMultiScale(gray, 1.3, 5))
         face2 = profile_cascade.detectMultiScale(gray, 1.3, 5)
@@ -135,13 +140,14 @@ class FaceRecognizer(event.EventEmitter):
                                    key=lambda x: x[1])
                 if face is None:
                     face, d_c = distances[0]
-                    self.emit('face_pos', face)
+                    self.emit('face_pos', tuple(x*2 for x in face))
                     i = MAX_ITER
                 else:
                     distances.sort(key=lambda x: distance_between_faces(x[0],
                                                                         face))
                     if distance_between_faces(face, distances[0][0]) < 50:
-                        self.emit('face_pos', distances[0][0])
+                        self.emit('face_pos',
+                                  tuple(2*x for x in distances[0][0]))
                         face, d_c = distances[0]
                         i = MAX_ITER
                     else:
