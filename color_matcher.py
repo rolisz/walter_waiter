@@ -7,7 +7,7 @@ class ColorMatcher(object):
     pahar_mare_mov = (120, 200)
     pahar_mare_albastru = (90, 120)
     pahar_mic_rosu = (140, 180)
-   
+
     def __init__(self, color):
         """
         Color should be a tuple consisting of low-end of hue value and high-end value of hue,
@@ -21,23 +21,23 @@ class ColorMatcher(object):
         if len(color) != 2 or color[0] > color[1]:
             raise ValueError("Invalid values for color %s" % color)
         self.color = color
-            
+
     def find_bboxes(self, image, kernel_size=10, iterations=3, min_area=200, x_threshold = 25):
         """
         BGR Image to find bounding boxes of objects of given color. Kernel_size is the size of the kernel used
-        in the morphological operations, iterations is the number of time the morphological opening should 
+        in the morphological operations, iterations is the number of time the morphological opening should
         be done. Min_area is the threshold for area for blobs to be considered. x_threshold is the maximum
-        distance between a blob's right most part and the next blob's left most part so that they are 
+        distance between a blob's right most part and the next blob's left most part so that they are
         considered to be in the same bucket.
         Returns a list of contours, as tuples of min_x, min_y, max_x, max_y.
         """
-        
+
         # Convert BGR to HSV
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         h, s, v = self.color[0], 50, 50
         h2, s2, v2 = self.color[1], 255, 255
-        
+
         lower_range = np.array([h,s,v])
         upper_range = np.array([h2,s2,v2])
 

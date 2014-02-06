@@ -15,7 +15,7 @@ def f(a1, a2, a3):
     # X is the direction in front
     a2 = delta - a2
     return r1*cos(a1) + r2*cos(a1+a2) + r3*cos(a1+a2+a3), r1*sin(a1) + r2*sin(a1+a2) + r3*sin(a1+a2+a3)
-    
+
 
 
 
@@ -26,9 +26,9 @@ def get_angles(x, y):
         xhat, yhat = f(a1, a2, a3)
         dist = sqrt((xhat-x)**2 + (yhat-y)**2)
         return dist
-        
-    res = scipy.optimize.minimize(  
-                F, 
+
+    res = scipy.optimize.minimize(
+                F,
                 [a1, a2, a3],
                 tol=1e-3,
                 method='TNC',
@@ -36,10 +36,10 @@ def get_angles(x, y):
                 )
     a1, a2, a3 = res['x']
     xc, yc = f(a1, a2, a3)
-    
+
     print res
     return a1*180/pi, a2*180/pi, a3*180/pi
-   
+
 t = time()
 
 a1, a2, a3 = get_angles(300, 0)
