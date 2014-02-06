@@ -23,6 +23,7 @@
 # THE SOFTWARE.
 
 from __future__ import with_statement
+from smooth import getSpeeds
 
 """iRobot Roomba Serial Control Interface (SCI) and Create Open Interface (OI).
 
@@ -635,37 +636,38 @@ class Create(Roomba):
         time.sleep(START_DELAY)
         self.Passive()
 
+    # Distances are in milimeters
+    def smoothDriveStraight(self, dist, duration):
+        self.smoothDrive(dist, duration, RADIUS_STRAIGHT)
+
+    def smoothDrive(self, dist, duration, radius):  # Positive radius: to the
+                                                    # left
+        sleepTime = 0.01
+        steps = duration / sleepTime
+        for speed in getSpeeds(dist, steps):
+            newSp = speed / sleepTime
+            self.Drive(newSp, radius)
+            print(newSp)
+            time.sleep(sleepTime)
+
 if __name__ == '__main__':
 
         #''' Hit enter to toggle whether it's running '''
 
-    from smooth import getSpeeds
     import time
 
     c = Create()
     c.Control()
 
-    # Distances are in milimeters
-    def smoothDriveStraight(dist, duration):
-        smoothDrive(dist, duration, RADIUS_STRAIGHT)
+    for i in range(5):
+        # Drive forward for 1500mm in 5s
+        c.smoothDriveStraight(1500, 5)
 
-    def smoothDrive(dist, duration, radius):    # Positive radius: to the left
-        sleepTime = 0.1
-        steps = duration / sleepTime
-        for speed in getSpeeds(dist, steps):
-            newSp = speed / sleepTime
-            c.Drive(newSp, radius)
-            print(newSp)
-            time.sleep(sleepTime)
+        # Turn clockwise with speed 104 for 4 seconds (which is about 180
+        # degrees)
+        c.TurnInPlace(104, 'cw')
+        time.sleep(4)
 
-for i in range(5):
-    # Drive forward for 1500mm in 5s
-    smoothDriveStraight(1500, 5)
+        c.Stop()
 
-    # Turn clockwise with speed 104 for 4 seconds (which is about 180 degrees)
-    c.TurnInPlace(104, 'cw')
-    time.sleep(4)
-
-    c.Stop()
-
-# TODO: smoothSetSpeed
+    # TODO: smoothSetSpeed
