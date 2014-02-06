@@ -10,11 +10,14 @@ class RoboController(EventConsumer):
         super(RoboController, self).__init__()
 
     def run(self):
+        speed = 0
         while True:
             event, value = self.queue.get(True, 20000)
             print(event)
             if event == 'face_pos':
-                self.controller.smoothDriveStraight(100, 0.1)
+                speed = min(speed + 10, 150)
+                self.controller.DriveStraight(speed)
             if event == 'face_gone':
-                self.controller.Stop()
+                speed = max(speed - 20, 0)
+                self.controller.DriveStraight(speed)
 
