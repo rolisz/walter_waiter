@@ -77,8 +77,8 @@ def get_coords(distance, x_angle, y_angle):
     psi =  float(x_angle) * math.pi/180.0
     r = float(distance)
 
-    x = r * math.cos(theta) * math.cos(psi) - 50 # camera is 50mm behind arm
-    y = r * math.cos(theta) * math.sin(psi) #- 90
+    x = r * math.cos(theta) * math.cos(psi) #+ 50 # camera is 50mm behind arm
+    y = r * math.cos(theta) * math.sin(psi) #-70 # Don't touch
     z = r * math.sin(theta)
     
     return (x, y, z)
@@ -96,11 +96,10 @@ def pixels2coords(x_px, y_px, cup_width_px, size=(1024,1280), hfov=46.25):
     '''
     
     #TODO: test!!!
-    print size[1]
     distance = get_distance_from_cup_width(cup_width_px, axis_width=size[1], axis_fov=hfov)
-    x_angle = get_angle_from_pixels(x_px, size[1], hfov)
+    x_angle = get_angle_from_pixels(x_px, size[1], hfov*size[0]/float(size[1]))
     # We assume pixels are square:
-    y_angle = get_angle_from_pixels(y_px, size[0], hfov*size[0]/float(size[1]))
+    y_angle = get_angle_from_pixels(y_px, size[0], hfov)
     return get_coords(distance, x_angle, y_angle)
     
 # Run the file to test
