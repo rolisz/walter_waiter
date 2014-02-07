@@ -36,7 +36,7 @@ class EventLoop(object):
                 print("Invalid event encountered %s with values %r!" %
                       (event, value))
             for listener in self.registry[event]:
-                print('call', listener, event, value)
+                # print('call', listener, event, value)
                 listener(event, value)
 
 
