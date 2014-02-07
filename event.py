@@ -60,8 +60,8 @@ class EventConsumer(Thread):
 
 class DecisionMaker(EventEmitter, EventConsumer):
     def __init__(self, ev):
-        EventEmitter.__init__(ev)
-        EventConsumer.__init__()
+        EventEmitter.__init__(self, ev)
+        EventConsumer.__init__(self)
 
 if __name__ == '__main__':
     from time import sleep
