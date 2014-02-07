@@ -30,16 +30,18 @@ class Arm:
         currDegs = motor[mi].degrees
         distToGo = targetDegs - currDegs
         for pos in getPositions(currDegs, targetDegs, freq):
-            moveTo(motor, mi, timePerStep, pos, dryRun)
+            self.moveTo(motor, mi, timePerStep, pos, dryRun)
 
 
-    def setAngles(self, v0, v1, v2):
+    def setAngles(self, v0, v1, v2, time=1):
         vals = [v0, v1, v2]
 
         for motor, degree in enumerate(vals):
             # if motor == 1:
             #     degree *= -1
             #     degree += 50
-            self.moveTo(self.ssc, motor, 1, degree, False)
+            self.moveTo(self.ssc, motor, time, degree, False)
             #sleep(0.1)
-
+    def setCam(self, angle):
+        self.ssc[3].degrees = angle
+        self.ssc.commit(1000)
