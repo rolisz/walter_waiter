@@ -1,6 +1,7 @@
 from event import EventConsumer
 from pyrobot import Create
 from perception.pixels2coords import get_angle_from_pixels
+from time import sleep
 
 
 class RoboController(EventConsumer):
@@ -28,4 +29,15 @@ class RoboController(EventConsumer):
             if event == 'face_gone':
                 speed = max(speed - 20, 0)
                 self.controller.DriveStraight(speed)
+                sleep(5)
+                self.controller.TurnInPlace(100, -1)
+                sleep(2)
+                self.controller.DriveStraight(100)
+                sleep(2)
+                self.controller.Stop()
+            if event == 'cup_released':
+                self.controller.TurnInPlace(100, 'cw')
+                sleep(2)
+                self.controller.Stop()
+
 

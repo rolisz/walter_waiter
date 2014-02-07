@@ -39,6 +39,9 @@ class LynxController(event.DecisionMaker):
                     self.emit('cup_over_tray', (50, -200))
                     print 'Cup over tray'
 
+                if event == 'cup_released':
+                    self.l.setCam(30)
+
         except KeyboardInterrupt:
             pass
 
