@@ -60,11 +60,13 @@ def get_coords(distance, x_angle, y_angle):
     @param x_angle:
         Angle between camera's optical axis and point
         projected to horizontal plane
+        (degrees)
     @param y_angle:
         Angle between camera's optical axis and point
         projected on a horizontal plane
         NOTE: on Wikipedia, this angle is from vertical axis
         This is why we switch sin with cos on theta
+        (degrees)
     
     >>> '%.2f %.2f %.2f' % get_coords(8, 25, 0)
     '7.25 3.38 0.00'
@@ -73,19 +75,22 @@ def get_coords(distance, x_angle, y_angle):
     '10.26 2.75 -2.85'
     
     '''
-    theta = float(y_angle) * math.pi/180.0
-    psi =  float(x_angle) * math.pi/180.0
-    r = float(distance)
-
-    x = r * math.cos(theta) * math.cos(psi) #+ 50 # camera is 50mm behind arm
-    y = r * math.cos(theta) * math.sin(psi) #-70 # Don't touch
-    z = r * math.sin(theta)
+    theta = math.radians(y_angle) # horizontal angle
+    psi =  math.radians(x_angle)  # vertical angle
+    r = float(distance)#*(1-psi)
     
+    #print 'psi', psi, 'theta:', theta
+    x = r * math.cos(theta) * math.cos(psi) # camera is 50mm behind arm
+    y = r * math.cos(theta) * math.sin(psi) # Don't touch
+    z = r * math.sin(theta)
+    #print 'positions:', x, y
     return (x, y, z)
 
-def pixels2coords(x_px, y_px, cup_width_px, size=(1024,1280), hfov=46.25):
+def pixels2coords(x_px, y_px, cup_width_px, size=(720,1280), hfov=46.25, cam_angle=-35):
     '''
     Convert pixel coordinates to our cup's position
+    @param cam_angle:
+        How much the camera is tilted upwards (or - for downwards)
     
     >>> '%.2f %.2f %.2f' % pixels2coords(320, 240, 298, hfov=60)
     '162.72 0.00 0.00'
@@ -96,11 +101,19 @@ def pixels2coords(x_px, y_px, cup_width_px, size=(1024,1280), hfov=46.25):
     '''
     
     #TODO: test!!!
-    distance = get_distance_from_cup_width(cup_width_px, axis_width=size[1], axis_fov=hfov)
-    x_angle = get_angle_from_pixels(x_px, size[1], hfov*size[0]/float(size[1]))
+    x_angle = get_angle_from_pixels(x_px, size[1], hfov)
+    
     # We assume pixels are square:
-    y_angle = get_angle_from_pixels(y_px, size[0], hfov)
-    return get_coords(distance, x_angle, y_angle)
+    y_angle = get_angle_from_pixels(y_px, size[0], hfov*size[0]/float(size[1])) + cam_angle
+    print 'y, x:', y_angle, x_angle
+    distance = get_distance_from_cup_width(cup_width_px, axis_width=size[1], axis_fov=hfov)
+    
+
+    x,y,z = get_coords(distance, x_angle, y_angle)
+    x += 0.1143857774*y_angle**2 - x_angle - 73.0840411798406
+    y += 0.106520665989488*x_angle**2 - 0.461462282126281*y_angle + 20.580651397281183
+
+    return x,y,z
     
 # Run the file to test
 import doctest
