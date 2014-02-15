@@ -7,32 +7,33 @@ class EventLoop(object):
 
     def __init__(self):
         self.registry = {}
-        self.threads = set()
+        self.threads = {}
         self.queue = Queue.Queue()
         self.run_flag = Event()
         self.run_flag.set()
 
-    def register(self, thread_obj, event=None):
+    def register(self, name, thread_obj=None, event=None):
         """
         If called with two parameters, they should be event to listen to and
         the EventConsumer class that will listen to it.
         If called with one parameter, it should be an EventEmitter class.
         """
+        if thread_obj is not None:
+            self.threads[name] = thread_obj
         if event is not None:
             if event not in self.registry:
                 self.registry[event] = []
-            self.registry[event].append(thread_obj.add_event)
-        self.threads.add(thread_obj)
+            self.registry[event].append(self.threads[name].add_event)
 
-    def unregister(self, event, callback):
-        self.registry[event].remove(callback)
+    def unregister(self, event, name):
+        self.registry[event].remove(self.threads[name].add_event)
 
     def add_event(self, event, value):
         self.queue.put((event, value))
 
     def run(self):
-        for thread in self.threads:
-            thread.start()
+        for name in self.threads:
+            self.threads[name].start()
         while True:
             try:
                 event, value = self.queue.get(True, 20000)
@@ -45,7 +46,9 @@ class EventLoop(object):
             except KeyboardInterrupt:
                 self.run_flag.clear()
                 for thread in self.threads:
-                    thread.join()
+                    print(thread)
+                    self.threads[thread].join()
+                return
 
 
 class EventEmitter(Thread):
@@ -78,7 +81,7 @@ class EventConsumer(Thread):
 
     def run(self):
         while self.run_flag.is_set():
-            event, value = self.queue.get(True, 20000)
+            event, value = self.queue.get(True, 10)
             getattr(self, event)(value)
 
 
@@ -98,6 +101,8 @@ if __name__ == '__main__':
 
         def run(self):
             for i in range(20):
+                if not self.run_flag.is_set():
+                    break
                 self.emit(self.i, i)
                 sleep(random())
 
@@ -114,12 +119,12 @@ if __name__ == '__main__':
 
     e = EventLoop()
 
-    e.register(Producer(e, 'event1'))
-    e.register(Producer(e, 'event1'))
-    e.register(Producer(e, 'event2'))
+    e.register("p1", Producer(e, 'event1'))
+    e.register("p2", Producer(e, 'event1'))
+    e.register("p3", Producer(e, 'event2'))
 
-    e.register(Consumer(e.run_flag, 'c1'), 'event1')
-    e.register(Consumer(e.run_flag, 'c2'), 'event2')
-    e.register(Consumer(e.run_flag, 'c3'), 'event1')
+    e.register('c1', Consumer(e.run_flag, 'c1'), 'event1')
+    e.register('c2', Consumer(e.run_flag, 'c2'), 'event2')
+    e.register('c3', Consumer(e.run_flag, 'c3'), 'event1')
 
     e.run()
