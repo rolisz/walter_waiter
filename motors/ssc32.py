@@ -75,8 +75,8 @@ class Servo(object):
     def degrees(self):
         deltapos = self._pos - self.min
         return self.deg_min + \
-                (abs(self.deg_min)*deltapos + abs(self.deg_max)*deltapos) \
-                / (self.max - self.min)
+            (abs(self.deg_min)*deltapos + abs(self.deg_max)*deltapos) \
+            / (self.max - self.min)
 
     @degrees.setter
     def degrees(self, deg):
@@ -85,8 +85,8 @@ class Servo(object):
         """
         deg = float(deg)
         pos = self.min + \
-                (deg - self.deg_min) * (self.max - self.min) \
-                / (abs(self.deg_min) + abs(self.deg_max))
+            (deg - self.deg_min) * (self.max - self.min) \
+            / (abs(self.deg_min) + abs(self.deg_max))
         self.position = pos
 
     @property
@@ -132,14 +132,16 @@ class SSC32(object):
         `baudrate` — serial speed
         `count` — servo count, on original SSC32 need to be set to 32
         `config` — servo config file e.g. name and max/min
-        `autocommit` — autocommit changes, used as default time (#<n>P<pos>T<time>)
+        `autocommit` — autocommit changes, used as default time
+                       (#<n>P<pos>T<time>)
         """
         self.config = None
         self.description = None
 
         self.autocommit = autocommit
         self.ser = serial.Serial(port, baudrate, timeout=1)
-        self._servos = [Servo(self._servo_on_changed, i) for i in xrange(count)]
+        self._servos = [Servo(self._servo_on_changed, i)
+                        for i in xrange(count)]
 
         # for baudrate detection on Open Robotics controllers
         self.ser.write(chr(13)*10)
@@ -237,4 +239,3 @@ class SSC32(object):
                         servo.name.upper(), servo.no,
                         servo.min, servo.max,
                         servo.deg_min, servo.deg_max]]) + '\n')
-
