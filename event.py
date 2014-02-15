@@ -1,5 +1,6 @@
 import Queue
 from threading import Thread, Event
+from time import sleep
 
 
 class EventLoop(object):
@@ -66,6 +67,14 @@ class EventConsumer(Thread):
 
     def add_event(self, event, value):
         self.queue.put((event, value))
+
+    def sleep(self, time):
+        sleep(time)
+        while True:
+            try:
+                self.queue.get(False)
+            except Empty:
+                break
 
     def run(self):
         while self.run_flag.is_set():
