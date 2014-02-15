@@ -64,17 +64,36 @@ def common_area(face1, face2):
     return 0.0
 
 
-class Webcam(event.DecisionMaker):
-    def __init__(self, ev, cam, cam_angle):
-        self.state = 'cup'
-        self.cam_angle = cam_angle
+class Webcam(event.EventEmitter):
+    def __init__(self, ev, cam):
         self.cap = cv2.VideoCapture(cam)
-        self.blue_cup = ColorMatcher('pahar_mare_albastru')
 
         if cam == 1:
             self.cap.set(3, 1280)
             self.cap.set(4, 720)
-        #
+
+        super(Webcam, self).__init__(ev)
+
+    def run(self):
+
+        while self.run_flag.is_set():
+            _, frame = self.cap.read()
+            
+            self.emit('frame', frame)
+            cv2.imshow('frame', frame)
+
+            k = cv2.waitKey(5) & 0xFF
+            if k == 27:
+                break
+
+        cv2.destroyAllWindows()
+        self.cap.release()
+
+
+MAX_ITER = 15
+class FaceDetector(event.DecisionMaker):
+    def __init__(self, ev):
+        self.i = MAX_ITER
         #   If this script doesn't work, first check if the paths to the Haar
         # cascades are correct. By default they work on my computer.
         # On other computers they can be overwritten by setting the env
@@ -85,43 +104,10 @@ class Webcam(event.DecisionMaker):
         ))
         self.profile_cascade = cv2.CascadeClassifier(os.getenv('PROFILE_HAAR',
             "D:\opencv\data\haarcascades\haarcascade_profileface.xml"
-        ))
-        self.located = 0
-        super(Webcam, self).__init__(ev)
+        ))               
+        super(FaceDetector, self).__init__(ev)
 
-    def run(self):
-        self.face = None
-        self.d_c = None
-
-        MAX_ITER = 15
-        self.i = MAX_ITER
-        while True:
-            _, frame = self.cap.read()
-            if self.state == 'face':
-                self.face_detect(frame)
-            elif self.state == 'cup':
-                self.cup_detect(frame)
-
-            try:
-                event, coords = self.queue.get(False)
-                if event == 'cup_released':
-                    self.state = 'face'
-                elif event == 'face_gone':
-                    sleep(5)
-                    self.state = 'cup'
-            except Empty:
-                pass
-
-            cv2.imshow('frame', frame)
-
-            k = cv2.waitKey(5) & 0xFF
-            if k == 27:
-                break
-
-        cv2.destroyAllWindows()
-        self.cap.release()
-
-    def face_detect(self, frame):
+    def frame(self, frame):
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5,
                            interpolation=cv2.INTER_AREA)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -129,7 +115,7 @@ class Webcam(event.DecisionMaker):
         face2 = self.profile_cascade.detectMultiScale(gray, 1.3, 5)
         faces.extend(face2)
         for (x, y, w, h) in faces:
-            cv2.rectreleasedangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
         non_dup = set()
         for f1, f2 in itertools.combinations(faces, 2):
             if common_area(f1, f2) > 0.5:
@@ -144,13 +130,14 @@ class Webcam(event.DecisionMaker):
 
         if self.face is None and len(faces) == 0:
             sleep(0.05)
+            self.emit('no_face')
             return
         elif len(faces):
             distances = sorted([(face, distance_to_center(face,
                                (1280, 1024))) for face in faces],
-                               key=lambda x: x[1])
+                               key=lambda x: x[0][2]*x[0][3])  # Area of face
             if self.face is None:
-                self.face, self.d_c = distances[0]
+                self.face, self.d_c = distances[-1]
                 self.emit('face_pos', tuple(x*2 for x in self.face))
                 self.i = MAX_ITER
             else:
@@ -163,14 +150,26 @@ class Webcam(event.DecisionMaker):
                     self.i = MAX_ITER
                 else:
                     self.emit('face_gone', self.face)
+                    self.i -= 1
+                    if self.i == 0:
+                        self.face = None
         else:
             if self.face is not None:
                 self.emit('face_gone', self.face)
                 self.i -= 1
                 if self.i == 0:
                     self.face = None
+            else:
+                self.emit('no_face')
 
-    def cup_detect(self, frame):
+
+class CupDetector(event.DecisionMaker):
+    def __init__(self, ev, cam_angle):
+        self.frames_seen = 0
+        self.blue_cup = ColorMatcher('pahar_mare_albastru')
+        super(FaceDetector, self).__init__(ev)
+
+    def frame(self, frame):
         big_contours = self.blue_cup.find_bboxes(frame)
 
         contours = []
@@ -186,8 +185,8 @@ class Webcam(event.DecisionMaker):
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255),
                         thickness=2)
 
+        coords_list = []
         for x, y, X, Y, matches, ratio in contours:
-
             cv2.rectangle(frame, (x - 2, y - 2), (X, Y), (0, 255, 0), 2)
             dist = '%0.2f' % get_distance_from_cup_width(X-x)
             coords = pixels2coords((x+X)/2., Y-(X-x), X-x,
@@ -198,12 +197,17 @@ class Webcam(event.DecisionMaker):
             cv2.putText(frame, '%0.2f %0.2f %0.2f' % coords, (x, y-50),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
                         thickness=2)
+            coords_list.append(coords)
+        coords_list.sort()
 
+        if len(contours):
             if x > 0 and X < frame.shape[1]:
-                self.located += 1
-                if self.located == 20:
-                    self.emit('cup_appeared', coords)
-                    self.located += 1
+                self.frames_seen += 1
+                if self.frames_seen == 20:
+                    self.emit('cup_appeared', coords_list[0])
+        else:
+            self.emit('cups_done')
+
 
 if __name__ == "__main__":
     import doctest
