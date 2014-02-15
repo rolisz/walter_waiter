@@ -8,7 +8,7 @@ import math
 import event
 from Queue import Empty
 from color_matcher import ColorMatcher
-from perception.pixels2coords import pixels2coords, get_distance_from_cup_width
+from pixels2coords import pixels2coords, get_distance_from_cup_width
 
 
 def distance_between_faces(face1, face2):

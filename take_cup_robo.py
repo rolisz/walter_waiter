@@ -1,8 +1,8 @@
-from lynx_controller import LynxController
-from webcam import Webcam
-from nxt_controller import NxtController
+from controllers.lynx_controller import LynxController
+from controllers.irobot_controller import RoboController
+from controllers.nxt_controller import NxtController
+from sensors.webcam import Webcam
 from event import EventLoop
-from irobot_controller import RoboController
 import sys
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 from get_angles import get_angles
 from time import sleep
-import lynx_motion
+from motors import lynx_motion
 import event
 
 

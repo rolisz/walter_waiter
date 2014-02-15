@@ -1,6 +1,5 @@
 from ssc32 import *
 from time import sleep
-from smooth import getPositions
 # Run with sudo
 
 
@@ -24,14 +23,6 @@ class Arm:
         if not dryRun:
             motor.commit(time*1000)
         print("moved")
-
-    def smoothMoveTo(self, motor, mi, time, targetDegs, dryRun=True):
-        freq = 100.0
-        timePerStep = time/freq
-        currDegs = motor[mi].degrees
-        distToGo = targetDegs - currDegs
-        for pos in getPositions(currDegs, targetDegs, freq):
-            self.moveTo(motor, mi, timePerStep, pos, dryRun)
 
     def setAngles(self, v0, v1, v2, time=1):
         vals = [v0, v1, v2]

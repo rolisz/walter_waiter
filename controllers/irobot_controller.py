@@ -1,6 +1,6 @@
 from event import EventConsumer
-from pyrobot import Create
-from perception.pixels2coords import get_angle_from_pixels
+from motors.pyrobot import Create
+from sensors.pixels2coords import get_angle_from_pixels
 from time import sleep
 
 

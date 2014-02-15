@@ -23,7 +23,6 @@
 # THE SOFTWARE.
 
 from __future__ import with_statement
-from smooth import getSpeeds
 
 """iRobot Roomba Serial Control Interface (SCI) and Create Open Interface (OI).
 
@@ -639,21 +638,6 @@ class Create(Roomba):
         self.sci.soft_reset()
         time.sleep(START_DELAY)
         self.Passive()
-
-    # Distances are in milimeters
-#    def smoothDriveStraight(self, dist, duration):
-#        self.smoothDrive(dist, duration, RADIUS_STRAIGHT)
-#
-#    def smoothDrive(self, dist, duration, radius):  # Positive radius: to the
-#                                                    # left
-#        sleepTime = 0.01
-#        steps = duration / sleepTime
-#        for speed in getSpeeds(dist, steps):
-#            newSp = speed / sleepTime
-#            self.Drive(newSp, radius)
-#            print(newSp)
-#            time.sleep(sleepTime)
-
 
 def smoothSetSpeed(speed, duration, radius=RADIUS_STRAIGHT):
     sleepTime = 0.1
