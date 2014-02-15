@@ -39,5 +39,3 @@ class RoboController(EventConsumer):
                 self.controller.TurnInPlace(100, 'cw')
                 sleep(2)
                 self.controller.Stop()
-
-

@@ -32,4 +32,3 @@ class NxtController(event.DecisionMaker):
                 except Exception:
                     self.motor.idle()
                     self.emit('cup_released', True)
-

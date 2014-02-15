@@ -217,8 +217,8 @@ class PyRobotError(Exception):
 
 class SerialCommandInterface(object):
 
-    """A higher-level wrapper around PySerial specifically designed for use with
-    iRobot's SCI.
+    """A higher-level wrapper around PySerial specifically designed for use
+    with iRobot's SCI.
 
     """
 
@@ -317,8 +317,8 @@ class RoombaSensors(object):
 
     def _DecodeGroupPacket0(self, bytes):
         """Decode sensord data from a request for group 0 (all data)."""
-        # NOTE(damonkohler): We decode sensor data in reverse order for better pop
-        # performance.
+        # NOTE(damonkohler): We decode sensor data in reverse order for better
+        # pop performance.
         self.DecodeUnsignedShort('capacity', bytes.pop(), bytes.pop())  # mAh
         self.DecodeUnsignedShort('charge', bytes.pop(), bytes.pop())  # mAh
         self.DecodeByte('temperature', bytes.pop())  # C
@@ -362,11 +362,12 @@ class RoombaSensors(object):
         """The angle that Roomba has turned through since the angle was last
         requested. The angle is expressed as the difference in the distance
         traveled by Roomba's two wheels in millimeters, specifically the right
-        wheel distance minus the left wheel distance, divided by two. This makes
-        counter-clockwise angles positive and clockwise angles negative. This can
-        be used to directly calculate the angle that Roomba has turned through
-        since the last request. Since the distance between Roomba's wheels is
-        258mm, the equations for calculating the angles in familiar units are:
+        wheel distance minus the left wheel distance, divided by two. This
+        makes counter-clockwise angles positive and clockwise angles negative.
+        This can be used to directly calculate the angle that Roomba has turned
+        through since the last request. Since the distance between Roomba's
+        wheels is 258mm, the equations for calculating the angles in familiar
+        units are:
 
         Angle in radians = (2 * difference) / 258
         Angle in degrees = (360 * difference) / (258 * Pi).
@@ -375,9 +376,9 @@ class RoombaSensors(object):
         minimum or maximum.
 
         Note: Reported angle and distance may not be accurate. Roomba measures
-        these by detecting its wheel revolutions. If for example, the wheels slip
-        on the floor, the reported angle of distance will be greater than the
-        actual angle or distance.
+        these by detecting its wheel revolutions. If for example, the wheels
+        slip on the floor, the reported angle of distance will be greater than
+        the actual angle or distance.
 
         """
         if unit not in (None, 'radians', 'degrees'):
@@ -392,11 +393,11 @@ class RoombaSensors(object):
         """The state of the bump (0 = no bump, 1 = bump) and wheeldrop sensors
         (0 = wheel up, 1 = wheel dropped) are sent as individual bits.
 
-        Note: Some robots do not report the three wheel drops separately. Instead,
-        if any of the three wheels drops, all three wheel-drop bits will be set.
-        You can tell which kind of robot you have by examining the serial number
-        inside the battery compartment. Wheel drops are separate only if there
-        is an 'E' in the serial number.
+        Note: Some robots do not report the three wheel drops separately.
+        Instead, if any of the three wheels drops, all three wheel-drop bits
+        will be set.  You can tell which kind of robot you have by examining
+        the serial number inside the battery compartment. Wheel drops are
+        separate only if there is an 'E' in the serial number.
 
         """
         byte = struct.unpack('B', byte)[0]
@@ -408,8 +409,8 @@ class RoombaSensors(object):
             'bump-right': bool(byte & 0x01)})
 
     def MotorOvercurrents(self, byte):
-        """The state of the five motors overcurrent sensors are sent as individual
-        bits (0 = no overcurrent, 1 = overcurrent).
+        """The state of the five motors overcurrent sensors are sent as
+        individual bits (0 = no overcurrent, 1 = overcurrent).
 
         """
         byte = struct.unpack('B', byte)[0]
@@ -467,16 +468,17 @@ class Roomba(object):
         self.safe = True
 
     def ChangeBaudRate(self, baud_rate):
-        """Sets the baud rate in bits per second (bps) at which SCI commands and
-        data are sent according to the baud code sent in the data byte.
+        """Sets the baud rate in bits per second (bps) at which SCI commands
+        and data are sent according to the baud code sent in the data byte.
 
-        The default baud rate at power up is 57600 bps. (See Serial Port Settings,
-        above.) Once the baud rate is changed, it will persist until Roomba is
-        power cycled by removing the battery (or until the battery voltage falls
-        below the minimum required for processor operation). You must wait 100ms
-        after sending this command before sending additional commands at the new
-        baud rate. The SCI must be in passive, safe, or full mode to accept this
-        command. This command puts the SCI in passive mode.
+        The default baud rate at power up is 57600 bps. (See Serial Port
+        Settings, above.) Once the baud rate is changed, it will persist until
+        Roomba is power cycled by removing the battery (or until the battery
+        voltage falls below the minimum required for processor operation). You
+        must wait 100ms after sending this command before sending additional
+        commands at the new baud rate. The SCI must be in passive, safe, or
+        full mode to accept this command. This command puts the SCI in passive
+        mode.
 
         """
         if baud_rate not in BAUD_RATES:
@@ -500,16 +502,17 @@ class Roomba(object):
     def Drive(self, velocity, radius):
         """Controls Roomba's drive wheels.
 
-        NOTE(damonkohler): The following specification applies to both the Roomba
-        and the Create.
+        NOTE(damonkohler): The following specification applies to both the
+        Roomba and the Create.
 
-        The Roomba takes four data bytes, interpreted as two 16-bit signed values
-        using two's complement. The first two bytes specify the average velocity
-        of the drive wheels in millimeters per second (mm/s), with the high byte
-        being sent first. The next two bytes specify the radius in millimeters at
-        which Roomba will turn. The longer radii make Roomba drive straighter,
-        while the shorter radii make Roomba turn more. The radius is measured from
-        the center of the turning circle to the center of Roomba.
+        The Roomba takes four data bytes, interpreted as two 16-bit signed
+        values using two's complement. The first two bytes specify the average
+        velocity of the drive wheels in millimeters per second (mm/s), with the
+        high byte being sent first. The next two bytes specify the radius in
+        millimeters at which Roomba will turn. The longer radii make Roomba
+        drive straighter, while the shorter radii make Roomba turn more. The
+        radius is measured from the center of the turning circle to the center
+        of Roomba.
 
         A Drive command with a positive velocity and a positive radius makes
         Roomba drive forward while turning toward the left. A negative radius
@@ -555,8 +558,8 @@ class Roomba(object):
 
     def Dock(self):
         """Start looking for the dock and then dock."""
-        # NOTE(damonkohler): We should be able to call dock from any mode, however
-        # it only seems to work from passive.
+        # NOTE(damonkohler): We should be able to call dock from any mode,
+        # however it only seems to work from passive.
         self.sci.start()
         time.sleep(0.5)
         self.sci.force_seeking_dock()
@@ -607,7 +610,8 @@ class Create(Roomba):
         self.sensors = CreateSensors(self)
 
     def Control(self):
-        """Start the robot's SCI interface and place it in safe or full mode."""
+        """Start the robot's SCI interface and place it in safe or full
+        mode."""
         logging.info('Sending control opcodes.')
         self.Passive()
         if self.safe:
@@ -619,8 +623,8 @@ class Create(Roomba):
     def PowerLowSideDrivers(self, drivers):
         """Enable or disable power to low side drivers.
 
-        'drivers' should be a list of booleans indicating which low side drivers
-        should be powered.
+        'drivers' should be a list of booleans indicating which low side
+        drivers should be powered.
 
         """
         assert len(drivers) == 3, 'Expecting 3 low side driver power settings.'
@@ -649,19 +653,20 @@ class Create(Roomba):
 #            self.Drive(newSp, radius)
 #            print(newSp)
 #            time.sleep(sleepTime)
-            
+
+
 def smoothSetSpeed(speed, duration, radius=RADIUS_STRAIGHT):
     sleepTime = 0.1
-    numSteps = 20   
+    numSteps = 20
     if duration < 2*sleepTime:
         numSteps = duration / sleepTime
-    
+
     for sp in getSpeeds(speed, numSteps):
         #self.Drive(sp, radius)
         print sp
         time.sleep(sleepTime)
-             
-             
+
+
 if __name__ == '__main__':
 
         #''' Hit enter to toggle whether it's running '''

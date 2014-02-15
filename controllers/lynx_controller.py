@@ -44,4 +44,3 @@ class LynxController(event.DecisionMaker):
 
         except KeyboardInterrupt:
             pass
-
