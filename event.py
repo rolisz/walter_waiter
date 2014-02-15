@@ -72,9 +72,9 @@ class EventConsumer(Thread):
         sleep(time)
         while True:
             try:
-                self.queue.get(False)
+                event, value = self.queue.get(False)
             except Empty:
-                break
+                getattr(self, event)(value)
 
     def run(self):
         while self.run_flag.is_set():
