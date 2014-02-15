@@ -39,8 +39,3 @@ def get_angles(x, y):
 
     print res
     return a1*180/pi, a2*180/pi, a3*180/pi
-
-t = time()
-
-a1, a2, a3 = get_angles(300, 0)
-print()

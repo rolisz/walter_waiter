@@ -20,7 +20,7 @@ class NxtController(event.DecisionMaker):
             if event == 'arm_aligned':
                 try:
                     print('turning')
-                    self.motor.turn(-10, 400)
+                    self.motor.turn(-10, 200)
                     print('turned')
                 except Exception:
                     print('excepted')

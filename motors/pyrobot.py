@@ -637,28 +637,41 @@ class Create(Roomba):
         self.Passive()
 
     # Distances are in milimeters
-    def smoothDriveStraight(self, dist, duration):
-        self.smoothDrive(dist, duration, RADIUS_STRAIGHT)
-
-    def smoothDrive(self, dist, duration, radius):  # Positive radius: to the
-                                                    # left
-        sleepTime = 0.01
-        steps = duration / sleepTime
-        for speed in getSpeeds(dist, steps):
-            newSp = speed / sleepTime
-            self.Drive(newSp, radius)
-            print(newSp)
-            time.sleep(sleepTime)
-
+#    def smoothDriveStraight(self, dist, duration):
+#        self.smoothDrive(dist, duration, RADIUS_STRAIGHT)
+#
+#    def smoothDrive(self, dist, duration, radius):  # Positive radius: to the
+#                                                    # left
+#        sleepTime = 0.01
+#        steps = duration / sleepTime
+#        for speed in getSpeeds(dist, steps):
+#            newSp = speed / sleepTime
+#            self.Drive(newSp, radius)
+#            print(newSp)
+#            time.sleep(sleepTime)
+            
+def smoothSetSpeed(speed, duration, radius=RADIUS_STRAIGHT):
+    sleepTime = 0.1
+    numSteps = 20   
+    if duration < 2*sleepTime:
+        numSteps = duration / sleepTime
+    
+    for sp in getSpeeds(speed, numSteps):
+        #self.Drive(sp, radius)
+        print sp
+        time.sleep(sleepTime)
+             
+             
 if __name__ == '__main__':
 
         #''' Hit enter to toggle whether it's running '''
 
     import time
 
-    c = Create()
-    c.Control()
-
+    #c = Create()
+    #c.Control()
+    smoothSetSpeed(300, 1)
+'''
     for i in range(5):
         # Drive forward for 1500mm in 5s
         c.smoothDriveStraight(1500, 5)
@@ -671,3 +684,4 @@ if __name__ == '__main__':
         c.Stop()
 
     # TODO: smoothSetSpeed
+'''

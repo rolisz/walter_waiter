@@ -28,7 +28,7 @@ class LynxController(event.DecisionMaker):
 
                     sleep(2)
                     # Emit arm_aligned
-                    print 'Arm aligned'
+                    print 'Arm: arm_aligned'
                     self.emit('arm_aligned', coords)
 
                 if event == 'cup_grasped':

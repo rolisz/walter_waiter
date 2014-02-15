@@ -3,11 +3,12 @@ from webcam import Webcam
 from nxt_controller import NxtController
 from event import EventLoop
 from irobot_controller import RoboController
+import sys
 
 if __name__ == "__main__":
     e = EventLoop()
 
-    l_c = LynxController(e, cam_angle=-30)
+    l_c = LynxController(e, cam_angle=-25)
     n_c = NxtController(e)
     r_c = RoboController()
     e.register(l_c, 'cup_appeared')
@@ -17,6 +18,10 @@ if __name__ == "__main__":
     e.register(r_c, 'face_gone')
     e.register(r_c, 'face_pos')
     e.register(r_c, 'cup_released')
-    e.register(Webcam(e, cam=1, cam_angle=-30))
+    e.register(Webcam(e, cam=1, cam_angle=-25))
     e.add_event('cup_released', True)
-    e.run()
+    try:
+        e.run()
+    except (KeyboardInterrupt, SystemExit):
+        #cleanup
+        sys.exit()
