@@ -78,9 +78,9 @@ class Webcam(event.EventEmitter):
 
         while self.run_flag.is_set():
             _, frame = self.cap.read()
-            
+
             self.emit('frame', frame)
-            cv2.imshow('frame', frame)
+
 
             k = cv2.waitKey(5) & 0xFF
             if k == 27:
@@ -104,7 +104,7 @@ class FaceDetector(event.DecisionMaker):
         ))
         self.profile_cascade = cv2.CascadeClassifier(os.getenv('PROFILE_HAAR',
             "D:\opencv\data\haarcascades\haarcascade_profileface.xml"
-        ))               
+        ))
         super(FaceDetector, self).__init__(ev)
 
     def frame(self, frame):
@@ -166,8 +166,9 @@ class FaceDetector(event.DecisionMaker):
 class CupDetector(event.DecisionMaker):
     def __init__(self, ev, cam_angle):
         self.frames_seen = 0
+        self.cam_angle = cam_angle
         self.blue_cup = ColorMatcher('pahar_mare_albastru')
-        super(FaceDetector, self).__init__(ev)
+        super(CupDetector, self).__init__(ev)
 
     def frame(self, frame):
         big_contours = self.blue_cup.find_bboxes(frame)
@@ -184,7 +185,6 @@ class CupDetector(event.DecisionMaker):
             cv2.putText(frame, '%0.3f' % ratio, (x, y+20),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255),
                         thickness=2)
-
         coords_list = []
         for x, y, X, Y, matches, ratio in contours:
             cv2.rectangle(frame, (x - 2, y - 2), (X, Y), (0, 255, 0), 2)
@@ -198,14 +198,20 @@ class CupDetector(event.DecisionMaker):
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
                         thickness=2)
             coords_list.append(coords)
-        coords_list.sort()
 
+        cv2.imshow('frame', frame)
+
+        coords_list.sort()
         if len(contours):
             if x > 0 and X < frame.shape[1]:
                 self.frames_seen += 1
-                if self.frames_seen == 20:
+                if self.frames_seen == 20 and coords_list[0][1] < 400:
+                    print 'cd: Cup appeared'
                     self.emit('cup_appeared', coords_list[0])
+                    self.frames_seen = 0
         else:
+
+            print 'cd: Cups done'
             self.emit('cups_done')
 
 

@@ -32,11 +32,12 @@ class EventLoop(object):
         self.queue.put((event, value))
 
     def run(self):
+        print 'Super has ran'
         for name in self.threads:
             self.threads[name].start()
         while True:
             try:
-                event, value = self.queue.get(True, 20000)
+                event, value = self.queue.get(True, 2)
                 if event not in self.registry:
                     print("Invalid event encountered %s with values %r!" %
                           (event, value))
@@ -49,6 +50,8 @@ class EventLoop(object):
                     print(thread)
                     self.threads[thread].join()
                 return
+            except Queue.Empty:
+                pass
 
 
 class EventEmitter(Thread):
@@ -57,7 +60,7 @@ class EventEmitter(Thread):
         self.run_flag = ev.run_flag
         super(EventEmitter, self).__init__()
 
-    def emit(self, event, values):
+    def emit(self, event, values=None):
         self.ev.add_event(event, values)
 
 
@@ -81,8 +84,11 @@ class EventConsumer(Thread):
 
     def run(self):
         while self.run_flag.is_set():
-            event, value = self.queue.get(True, 10)
-            getattr(self, event)(value)
+            try:
+                event, value = self.queue.get(True, 2)
+                getattr(self, event)(value)
+            except Queue.Empty:
+                pass
 
 
 class DecisionMaker(EventEmitter, EventConsumer):

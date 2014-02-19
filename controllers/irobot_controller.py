@@ -6,14 +6,11 @@ from time import sleep
 
 class RoboController(EventConsumer):
 
-    def __init__(self):
+    def __init__(self, ev):
         self.controller = Create()
         self.controller.Control()
         self.slept = False
-        super(RoboController, self).__init__()
-
-        event, value = self.queue.get(True, 20000)
-        print(event)
+        super(RoboController, self).__init__(ev)
 
     def face_pos(self, value):
         angle = -get_angle_from_pixels(value[0] + value[2]/2.0)
@@ -25,7 +22,7 @@ class RoboController(EventConsumer):
             self.controller.Drive(speed, 25 - angle)
         else:
             self.controller.Drive(speed, -25 - angle)
-            
+
     def face_gone(self, _):
         if not self.slept:
             speed = max(speed - 20, 0)
@@ -41,14 +38,18 @@ class RoboController(EventConsumer):
         # We don't see any cups
         # A) find people to give them to
         # TODO: if tray sensor has cup:
-        self.no_face(_)
+        pass
         # Else:
         # emit locate cups
 
     def no_face(self, _):
         # Find a new face
+        self.ev.unregister(event='frame', name='fd')
+        self.controller.TurnInPlace(100, 'vw')        
         
-    def cup_released(self, _):
+        self.ev.register(event='frame', name='fd')
+    
+    def cups_done(self, _):
         self.controller.TurnInPlace(100, 'cw')
         sleep(2)
         self.controller.Stop()

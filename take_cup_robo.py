@@ -7,32 +7,27 @@ import sys
 
 if __name__ == "__main__":
     e = EventLoop()
-
     l_c = LynxController(e, cam_angle=-25)
     n_c = NxtController(e)
-    r_c = RoboController()
-    cd = CupDetector(e)
+    r_c = RoboController(e.run_flag)
+    cd = CupDetector(e, cam_angle=-25)
     fd = FaceDetector(e)
+
     e.register('l_c', l_c, 'cup_appeared')  # Arm may align to grasp
     e.register('l_c', l_c, 'cup_grasped')  # Arm may align to release
     e.register('n_c', n_c, 'arm_aligned')  # Arm aligned for grasping
     e.register('n_c', n_c, 'cup_over_tray')  # Arm aligned for releasing
     e.register('l_c', l_c, 'cup_released')  # Arm may move to initial position
-    e.register('n_c', n_c, 'cup_released')  # Arm may move to initial position
+    e.register('r_c', r_c, 'cups_done')
 
     e.register('cd', cd, 'frame')
-    # TODO: only use frames for face det after
-    e.register('fd', fd, 'frame')  # We can see!
+
+    e.register('fd', fd)  # We can see!
 
     e.register('r_c', r_c, 'no_cup')  # When no cup, spin my head right round
-    e.register('r_c', r_c, 'face_gone')  # Face disappeared, wait for drink pickup
+    e.register('r_c', r_c, 'face_gone')  # Face disappeared, wait for pickup
     e.register('r_c', r_c, 'no_face')  # No face detected, try rotating
     e.register('r_c', r_c, 'face_pos')  # Face detected
-    e.register(Webcam(e, cam=1, cam_angle=-25))
-    e.add_event('cup_released', True)
+    e.register('webcam', Webcam(e, cam=1))
 
-    try:
-        e.run()
-    except (KeyboardInterrupt, SystemExit):
-        #cleanup
-        sys.exit()
+    e.run()

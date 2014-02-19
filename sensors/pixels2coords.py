@@ -112,7 +112,7 @@ def pixels2coords(x_px, y_px, cup_width_px, size=(720, 1280), hfov=46.25,
         get_angle_from_pixels(y_px, size[0], hfov*size[0]/float(size[1])) +
         cam_angle
     )
-    print 'y, x:', y_angle, x_angle
+
     distance = get_distance_from_cup_width(cup_width_px, axis_width=size[1],
                                            axis_fov=hfov)
 
