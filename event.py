@@ -26,7 +26,10 @@ class EventLoop(object):
             self.registry[event].append(self.threads[name].add_event)
 
     def unregister(self, event, name):
-        self.registry[event].remove(self.threads[name].add_event)
+        ev_thr = self.threads[name].add_event
+        if ev_thr in self.registry[event]:
+            self.registry[event].remove(ev_thr)
+
 
     def add_event(self, event, value):
         self.queue.put((event, value))
@@ -37,7 +40,7 @@ class EventLoop(object):
             self.threads[name].start()
         while True:
             try:
-                event, value = self.queue.get(True, 2)
+                event, value = self.queue.get(True, 20)
                 if event not in self.registry:
                     print("Invalid event encountered %s with values %r!" %
                           (event, value))
@@ -76,11 +79,17 @@ class EventConsumer(Thread):
 
     def sleep(self, time):
         sleep(time)
+        event = 'not_existent'
+        value = None
         while True:
             try:
                 event, value = self.queue.get(False)
-            except Empty:
-                getattr(self, event)(value)
+            except Queue.Empty:
+                try:
+                    getattr(self, event)(value)
+                except AttributeError:
+                    print("Unfound attribute %s" % event)
+                break
 
     def run(self):
         while self.run_flag.is_set():

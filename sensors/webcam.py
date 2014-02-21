@@ -68,9 +68,8 @@ class Webcam(event.EventEmitter):
     def __init__(self, ev, cam):
         self.cap = cv2.VideoCapture(cam)
 
-        if cam == 1:
-            self.cap.set(3, 1280)
-            self.cap.set(4, 720)
+        self.cap.set(3, 1280)
+        self.cap.set(4, 720)
 
         super(Webcam, self).__init__(ev)
 
@@ -99,23 +98,27 @@ class FaceDetector(event.DecisionMaker):
         # On other computers they can be overwritten by setting the env
         # variables FACE_HAAR and PROFILE_HAAR to the appropiate values.
         #
+        self.face = None
         self.face_cascade = cv2.CascadeClassifier(os.getenv('FACE_HAAR',
-            'D:\opencv\data\haarcascades\haarcascade_frontalface_default.xml'
+            'haarcascades/haarcascade_frontalface_default.xml'
         ))
         self.profile_cascade = cv2.CascadeClassifier(os.getenv('PROFILE_HAAR',
-            "D:\opencv\data\haarcascades\haarcascade_profileface.xml"
+            "haarcascades/haarcascade_profileface.xml"
         ))
         super(FaceDetector, self).__init__(ev)
 
     def frame(self, frame):
+
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5,
                            interpolation=cv2.INTER_AREA)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
         faces = list(self.face_cascade.detectMultiScale(gray, 1.3, 5))
         face2 = self.profile_cascade.detectMultiScale(gray, 1.3, 5)
         faces.extend(face2)
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+        cv2.imshow('faces', frame)
         non_dup = set()
         for f1, f2 in itertools.combinations(faces, 2):
             if common_area(f1, f2) > 0.5:
@@ -129,9 +132,7 @@ class FaceDetector(event.DecisionMaker):
             faces = [tuple(faces[0])]
 
         if self.face is None and len(faces) == 0:
-            sleep(0.05)
             self.emit('no_face')
-            return
         elif len(faces):
             distances = sorted([(face, distance_to_center(face,
                                (1280, 1024))) for face in faces],
@@ -146,6 +147,7 @@ class FaceDetector(event.DecisionMaker):
                 if distance_between_faces(self.face, distances[0][0]) < 50:
                     self.emit('face_pos',
                               tuple(2*x for x in distances[0][0]))
+                    print("should emit")
                     self.face, self.d_c = distances[0]
                     self.i = MAX_ITER
                 else:
@@ -161,6 +163,7 @@ class FaceDetector(event.DecisionMaker):
                     self.face = None
             else:
                 self.emit('no_face')
+        self.sleep(0)
 
 
 class CupDetector(event.DecisionMaker):
@@ -168,6 +171,7 @@ class CupDetector(event.DecisionMaker):
         self.frames_seen = 0
         self.cam_angle = cam_angle
         self.blue_cup = ColorMatcher('pahar_mare_albastru')
+        self.ev = ev
         super(CupDetector, self).__init__(ev)
 
     def frame(self, frame):
@@ -204,10 +208,13 @@ class CupDetector(event.DecisionMaker):
         coords_list.sort()
         if len(contours):
             if x > 0 and X < frame.shape[1]:
-                self.frames_seen += 1
-                if self.frames_seen == 20 and coords_list[0][1] < 400:
+
+                self.frames_seen = min(self.frames_seen + 1, 20)
+                if self.frames_seen == 20 and coords_list[0][0] < 400:
                     print 'cd: Cup appeared'
                     self.emit('cup_appeared', coords_list[0])
+                    self.sleep(0)
+                    print 'Queue unregistered: ', self.ev.registry
                     self.frames_seen = 0
         else:
 

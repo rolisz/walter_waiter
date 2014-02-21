@@ -123,8 +123,10 @@ def pixels2coords(x_px, y_px, cup_width_px, size=(720, 1280), hfov=46.25,
 
     return x, y, z
 
-# Run the file to test
-import doctest
-fails, _ = doctest.testmod()  # raise_on_error=True)
-if fails == 0:
-    print '[OK] pixel2coords'
+
+if __name__ == '__main__':
+    # Run the file to test
+    import doctest
+    fails, _ = doctest.testmod()  # raise_on_error=True)
+    if fails == 0:
+        print '[OK] pixel2coords'

@@ -35,6 +35,8 @@ class ColorMatcher(object):
         # Convert BGR to HSV
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
+        # Morning: 80, 80
+        # low light: 50, 50
         h, s, v = self.color[0], 50, 50
         h2, s2, v2 = self.color[1], 255, 255
 

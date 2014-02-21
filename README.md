@@ -17,6 +17,8 @@ States
         - face out => offerGlasses
     - face exit up => waitForGlassPickup
 - waitForGlassPickup
-    - wait 15 seconds
-    - if more glasses => offerGlasses
-        - else => loadGlasses
+    - wait:
+        - register for no_cups_on_tray
+        - when happens, unregister no_cups_on_tray and face det
+            - go to table (???)
+            - register cup det

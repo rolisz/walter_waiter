@@ -1,3 +1,10 @@
+/cam.png
+/perception/cam_experims/coords.csv
+/perception/cam_experims/d11_10.26314_2.75_-2.84701.png
+/perception/cam_experims/d11_10.33662_3.76222_0.png
+/perception/cam_experims/d8_7.25046_-3.38095_0.png
+/perception/cam_experims/d8_8_0_0.png
+/perception/cam_experims/scene.blend1
 *.py[cod]
 
 # C extensions

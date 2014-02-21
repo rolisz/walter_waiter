@@ -18,20 +18,23 @@ class NxtController(event.DecisionMaker):
     def arm_aligned(self, _):
         try:
             print('turning')
-            self.motor.turn(-10, 150)
+            self.motor.turn(-10, 200)
 
-        except Exception:
-            print('turned')
+        except motor.BlockedException:
+            # Move up
+            print('grasped')
             self.height_motor.turn(-127, 5000, brake=False)
             self.emit('cup_grasped', True)
             self.motor.brake()
 
     def cup_over_tray(self, _):
         try:
+            # Move down
+            print 'Lowering'
             self.height_motor.turn(127, 5000, brake=False)
             self.motor.turn(10, 200)
-        except Exception:
+        except motor.BlockedException:
 
-            print('turned')
+            print('released')
             self.motor.idle()
             self.emit('cup_released', True)

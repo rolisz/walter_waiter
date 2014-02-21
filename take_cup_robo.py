@@ -1,3 +1,5 @@
+#! /usr/bin/python
+
 from controllers.lynx_controller import LynxController
 from controllers.irobot_controller import RoboController
 from controllers.nxt_controller import NxtController
