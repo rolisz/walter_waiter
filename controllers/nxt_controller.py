@@ -9,20 +9,21 @@ class NxtController(event.DecisionMaker):
         self.brick = nxt.locator.find_one_brick()
         self.motor = motor.Motor(self.brick, motor.PORT_B)
         self.height_motor = motor.Motor(self.brick, motor.PORT_A)
+        self.obstacle_detector = None # #todo also issue on how to listen to both event loop and to this
+        super(NxtController, self).__init__(ev)
+    
+    def run(self):
         try:
             self.motor.turn(10, 100)
         except:
             pass
-        super(NxtController, self).__init__(ev)
+        super(NxtController, self).run()
 
     def arm_aligned(self, _):
         try:
-            print('turning')
             self.motor.turn(-10, 200)
-
         except motor.BlockedException:
             # Move up
-            print('grasped')
             self.height_motor.turn(-127, 5000, brake=False)
             self.emit('cup_grasped', True)
             self.motor.brake()
@@ -30,11 +31,8 @@ class NxtController(event.DecisionMaker):
     def cup_over_tray(self, _):
         try:
             # Move down
-            print 'Lowering'
             self.height_motor.turn(127, 5000, brake=False)
             self.motor.turn(10, 200)
         except motor.BlockedException:
-
-            print('released')
             self.motor.idle()
             self.emit('cup_released', True)
