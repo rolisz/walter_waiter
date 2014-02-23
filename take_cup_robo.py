@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-from controllers.lynx_controller import LynxController
+from controllers.cup_state import CupState
 from controllers.irobot_controller import RoboController
 from controllers.nxt_controller import NxtController
 from sensors.webcam import Webcam, CupDetector, FaceDetector
@@ -9,7 +9,7 @@ import sys
 
 if __name__ == "__main__":
     e = EventLoop()
-    l_c = LynxController(e, cam_angle=-25)
+    l_c = CupState(e, cam_angle=-25)
     n_c = NxtController(e)
     r_c = RoboController(e.run_flag)
     cd = CupDetector(e, cam_angle=-25)
