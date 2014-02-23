@@ -80,11 +80,10 @@ class Webcam(event.EventEmitter):
 
             self.emit('frame', frame)
 
-
             k = cv2.waitKey(5) & 0xFF
             if k == 27:
                 break
-
+            sleep(0.1)
         cv2.destroyAllWindows()
         self.cap.release()
 
@@ -133,6 +132,7 @@ class FaceDetector(event.DecisionMaker):
 
         if self.face is None and len(faces) == 0:
             self.emit('no_face')
+            return 
         elif len(faces):
             distances = sorted([(face, distance_to_center(face,
                                (1280, 1024))) for face in faces],
@@ -147,30 +147,23 @@ class FaceDetector(event.DecisionMaker):
                 if distance_between_faces(self.face, distances[0][0]) < 50:
                     self.emit('face_pos',
                               tuple(2*x for x in distances[0][0]))
-                    print("should emit")
                     self.face, self.d_c = distances[0]
                     self.i = MAX_ITER
-                else:
-                    self.emit('face_gone', self.face)
-                    self.i -= 1
-                    if self.i == 0:
-                        self.face = None
-        else:
-            if self.face is not None:
-                self.emit('face_gone', self.face)
-                self.i -= 1
-                if self.i == 0:
-                    self.face = None
-            else:
-                self.emit('no_face')
+                    self.sleep(0)
+                    return
+        self.emit('face_gone', self.face)
+        self.i -= 1
+        if self.i == 0:
+            self.face = None
         self.sleep(0)
 
 
 class CupDetector(event.DecisionMaker):
-    def __init__(self, ev, cam_angle):
+    def __init__(self, ev, cam_angle, cup_color='pahar_mare_albastru'):
         self.frames_seen = 0
         self.cam_angle = cam_angle
-        self.blue_cup = ColorMatcher('pahar_mare_albastru')
+        self.cup_color = cup_color
+        self.blue_cup = ColorMatcher(cup_color)
         self.ev = ev
         super(CupDetector, self).__init__(ev)
 
@@ -202,24 +195,18 @@ class CupDetector(event.DecisionMaker):
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
                         thickness=2)
             coords_list.append(coords)
-
-        cv2.imshow('frame', frame)
-
         coords_list.sort()
         if len(contours):
             if x > 0 and X < frame.shape[1]:
-
                 self.frames_seen = min(self.frames_seen + 1, 20)
                 if self.frames_seen == 20 and coords_list[0][0] < 400:
-                    print 'cd: Cup appeared'
+                    print 'cd: Cup appeared: %s' % self.cup_color
                     self.emit('cup_appeared', coords_list[0])
-                    self.sleep(0)
-                    print 'Queue unregistered: ', self.ev.registry
                     self.frames_seen = 0
         else:
-
-            print 'cd: Cups done'
+            print 'cd: Cups done: %s' % self.cup_color
             self.emit('cups_done')
+        cv2.imshow('frame', frame)
 
 
 if __name__ == "__main__":
