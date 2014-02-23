@@ -1,8 +1,9 @@
 from collections import deque
+import event
 
 class Ultrasonic(event.EventEmitter):
-    def __init__(self, ev):
-        self.serial_arduino = serial.Serial("COM9", 57600, timeout=1)
+    def __init__(self, ev, port="COM9"):
+        self.serial_arduino = serial.Serial(port, 57600, timeout=1)
         self.trayLength = 30 # in cm
         self.history = deque() # history of reads
         self.historyLength = 20 # history length
@@ -20,7 +21,7 @@ class Ultrasonic(event.EventEmitter):
     def cupInTray():
         duration = ''
         while duration == '': # sometimes a null read is made, make another one
-            duration = super.serial_arduino.readline().strip() # read duration in ms for sound to travel to first object and back    
+            duration = self.serial_arduino.readline().strip() # read duration in ms for sound to travel to first object and back    
         cm = int(duration) / 29 / 2 # convert to cm
         if cm < self.trayLength:
             return True
