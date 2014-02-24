@@ -1,18 +1,17 @@
-from event import EventConsumer
-from motors.pyrobot import Create
+from event import DecisionMaker
 from sensors.pixels2coords import get_angle_from_pixels
 from time import sleep
 
 
-class RoboController(EventConsumer):
+class TableState(DecisionMaker):
 
-    def __init__(self, ev):
-        self.controller = Create()
+    def __init__(self, ev, controller):
+        self.controller = controller
         self.controller.Control()
         self.slept = False
         self.ev = ev
         self.speed = 0
-        super(RoboController, self).__init__(ev)
+        super(TableState, self).__init__(ev)
 
     def face_pos(self, value):
         print('face')

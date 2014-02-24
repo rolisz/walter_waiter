@@ -12,14 +12,14 @@ class CupState(event.DecisionMaker):
         self.cups_got = 0
         self.cup = False
         self.init_angles = (77, 20, 62)
-        super(LynxController, self).__init__(ev)
+        super(CupState, self).__init__(ev)
 
     def run(self):
         # Move to initial position
         self.l = lynx_motion.Arm()
         self.l.setAngles(*self.init_angles)
         self.l.setCam(self.cam_angle)
-        super(LynxController, self).run()
+        super(CupState, self).run()
 
     def cup_appeared(self, coords):
         if self.cup:
@@ -28,7 +28,7 @@ class CupState(event.DecisionMaker):
             self.cup = True
         angles = get_angles(coords[0]-10, -coords[1]+50)
         self.l.setAngles(*angles)  # shouldn't there be a time here as well?
-        self.sleep(2)   
+        self.sleep(2)
         # Emit arm_aligned
         print 'Arm: arm_aligned'
         self.emit('arm_aligned', coords)
@@ -52,6 +52,8 @@ class CupState(event.DecisionMaker):
         self.l.setAngles(*self.init_angles)
         self.sleep(1)
         if self.cups_got == 2:
-            self.l.setCam(30)
+            self.ev.unregister(event='frame', name='cd')
             self.ev.register(event='frame', name='fd')
+            self.emit('cups_done')
+            self.l.setCam(30)
         self.cup = False
