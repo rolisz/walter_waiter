@@ -44,3 +44,38 @@ def get_angles(x, y):
 
     print res
     return a1*180/pi, a2*180/pi, a3*180/pi
+
+def angleToStartPos(v):
+	"""
+		A series of transformations of the forms
+		't' - translation: go forward for a number of units
+		'r' - rotation: rotate trigonometric wise a number of degrees
+		are made on the (0, 0) coordinates. 
+		We need to do a rotation so that the final position
+		(x', y') will "face" the starting position (0, 0).
+		Returns the degrees to rotate trigonometric wise
+		so that we face the starting position.
+		
+		>>> '%.2f' % angleToStartPos([('r', 32)])
+		'0.00'
+		>>> '%.2f' % angleToStartPos([('t', 1)])
+		'180.00'
+		>>> '%.2f' % angleToStartPos([('t', 1), ('r', 90), ('t', 1)])
+		'135.00'
+		>>> '%.2f' % angleToStartPos([('t', 1), ('r', 45), ('r', 45), ('t', 1), ('r', 90), ('t', 2)])
+		'135.00'
+	"""
+	theta = math.pi / 2
+	x, y = 0, 0
+	for t in v:
+		if t[0] == 'r':
+			theta = (theta + math.radians(t[1])) % (2 * math.pi)
+		if t[0] == 't':
+			x = x + t[1] * math.cos(theta)
+			y = y + t[1] * math.sin(theta)
+
+	if x == 0 and y == 0:
+		return 0
+	else:
+		alpha = math.atan2(y, x)
+		return math.degrees((-theta + alpha - math.pi) % (2 * math.pi))
