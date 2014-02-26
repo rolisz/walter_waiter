@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 from controllers.cup_state import CupState
-from controllers.table_state import TableState
+from controllers.face_state import FaceState
 from controllers.nxt_controller import NxtController
 from sensors.webcam import Webcam, CupDetector, FaceDetector
 from event import EventLoop
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     irobot_controller.Control()
     c_s = CupState(e, cam_angle=-25)
     n_c = NxtController(e)
-    t_s = TableState(e.run_flag, irobot_controller)
+    f_s = FaceState(e, irobot_controller)
     cd = CupDetector(e, cam_angle=-25)
     fd = FaceDetector(e)
 
@@ -30,9 +30,9 @@ if __name__ == "__main__":
     e.register('c_s', c_s, 'cup_released')  # Arm may move to initial position
 
     # Events for face tracking and killing actions
-    e.register('t_s', t_s, 'cups_done')
-    e.register('t_s', t_s, 'face_pos')
-    e.register('t_s', t_s, 'face_gone')
+    e.register('f_s', f_s, 'cups_done')
+    e.register('f_s', f_s, 'face_pos')
+    e.register('f_s', f_s, 'face_gone')
 
 
     e.run()

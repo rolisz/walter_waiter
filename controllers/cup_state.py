@@ -36,7 +36,7 @@ class CupState(event.DecisionMaker):
     def cup_grasped(self, _):
         # Positions for cups, in the order to avoid collisions
         positions = [(0, -270),
-                     (0, -130)
+                     (100, -200) # TODO: test
                      ]
 
         cup_pos = positions[self.cups_got]
@@ -51,7 +51,7 @@ class CupState(event.DecisionMaker):
         self.cups_got += 1
         self.l.setAngles(*self.init_angles)
         self.sleep(1)
-        if self.cups_got == 2:
+        if self.cups_got == 1:
             self.ev.unregister(event='frame', name='cd')
             self.ev.register(event='frame', name='fd')
             self.emit('cups_done')

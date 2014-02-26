@@ -8,6 +8,7 @@ import math
 import event
 from Queue import Empty
 from color_matcher import ColorMatcher
+from sensors.sift_matcher import SIFTMatcher
 from pixels2coords import pixels2coords, get_distance_from_cup_width
 
 
@@ -107,7 +108,6 @@ class FaceDetector(event.DecisionMaker):
         super(FaceDetector, self).__init__(ev)
 
     def frame(self, frame):
-
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5,
                            interpolation=cv2.INTER_AREA)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -130,33 +130,50 @@ class FaceDetector(event.DecisionMaker):
         elif len(faces):
             faces = [tuple(faces[0])]
 
-        if self.face is None and len(faces) == 0:
-            self.emit('no_face')
-            return 
-        elif len(faces):
+        if len(faces):
             distances = sorted([(face, distance_to_center(face,
                                (1280, 1024))) for face in faces],
                                key=lambda x: x[0][2]*x[0][3])  # Area of face
             if self.face is None:
                 self.face, self.d_c = distances[-1]
-                self.emit('face_pos', tuple(x*2 for x in self.face))
-                self.i = MAX_ITER
             else:
                 distances.sort(key=lambda x: distance_between_faces(x[0],
                                                                     self.face))
                 if distance_between_faces(self.face, distances[0][0]) < 50:
-                    self.emit('face_pos',
-                              tuple(2*x for x in distances[0][0]))
                     self.face, self.d_c = distances[0]
-                    self.i = MAX_ITER
+                else:
+                    print '1'
+                    self.emit('face_gone', self.face)
+                    self.i -= 1
+                    if self.i == 0:
+                        self.face = None
                     self.sleep(0)
                     return
-        self.emit('face_gone', self.face)
-        self.i -= 1
-        if self.i == 0:
-            self.face = None
+            self.emit('face_pos', tuple(x*2 for x in self.face))
+            self.i = MAX_ITER
+        elif self.face is not None:
+            print '2'
+            self.emit('face_gone', self.face)
+            self.i -= 1
+            if self.i == 0:
+                self.face = None
         self.sleep(0)
 
+
+class TableDetector(event.DecisionMaker):
+    def __init__(self, ev):
+        self.ev = ev
+        self.table_matcher = SIFTMatcher(templ='haarcascades/table.png')
+        super(TableDetector, self).__init__(ev)
+
+    def frame(self, frame):
+
+        kp2, matchesMask, dst, good, dst_pts =\
+                self.table_matcher.find_match(frame)
+
+        frame = cv2.drawKeypoints(frame,kp2,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        cv2.imshow('frame', frame)
+        self.sleep(0)
 
 class CupDetector(event.DecisionMaker):
     def __init__(self, ev, cam_angle, cup_color='pahar_mare_albastru'):
