@@ -30,12 +30,10 @@ class EventLoop(object):
         if ev_thr in self.registry[event]:
             self.registry[event].remove(ev_thr)
 
-
     def add_event(self, event, value):
         self.queue.put((event, value))
 
     def run(self):
-        print 'Super has ran'
         for name in self.threads:
             self.threads[name].start()
         while True:
@@ -79,14 +77,15 @@ class EventConsumer(Thread):
 
     def sleep(self, time):
         sleep(time)
-        event = 'not_existent'
+        event = None
         value = None
         while True:
             try:
                 event, value = self.queue.get(False)
             except Queue.Empty:
                 try:
-                    getattr(self, event)(value)
+                    if event is not None:
+                        getattr(self, event)(value)
                 except AttributeError:
                     print("Unfound attribute %s" % event)
                 break

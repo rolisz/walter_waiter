@@ -1,22 +1,31 @@
 #! /usr/bin/python
 
-from controllers.irobot_controller import RoboController
-from sensors.webcam import Webcam, FaceDetector
+from controllers.cup_state import CupState
+from controllers.face_state import FaceState
+from controllers.nxt_controller import NxtController
+from sensors.webcam import Webcam, CupDetector, FaceDetector
 from event import EventLoop
+from motors.pyrobot import Create
 import sys
 
 if __name__ == "__main__":
     e = EventLoop()
+    irobot_controller = Create()
+    irobot_controller.Control()
+    c_s = CupState(e, cam_angle=-25)
 
-    r_c = RoboController(e.run_flag)
+    f_s = FaceState(e, irobot_controller)
+    cd = CupDetector(e, cam_angle=-25)
     fd = FaceDetector(e)
 
+    e.register('webcam', Webcam(e, cam=1))
     e.register('fd', fd, 'frame')  # We can see!
 
-    e.register('r_c', r_c, 'no_cup')  # When no cup, spin my head right round
-    e.register('r_c', r_c, 'face_gone')  # Face disappeared, wait for pickup
-    e.register('r_c', r_c, 'no_face')  # No face detected, try rotating
-    e.register('r_c', r_c, 'face_pos')  # Face detected
-    e.register('webcam', Webcam(e, cam=1))
+    # Events for face tracking and killing actions
+    e.register('f_s', f_s, 'cups_done')
+    e.register('f_s', f_s, 'face_pos')
+    e.register('f_s', f_s, 'face_gone')
+    e.register('f_s', f_s, 'no_face')
 
+    e.add_event('cups_done', None)
     e.run()

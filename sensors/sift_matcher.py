@@ -21,36 +21,43 @@ class SIFTMatcher(object):
 
     def find_match(self, img, lowe_ratio=0.6):
         kp2, des2 = self.features.detectAndCompute(img, None)
-        matches = self.flann.knnMatch(self.des, des2, k=2)
-
-        # store all the good matches as per Lowe's ratio test.
-        good = []
-        for m, n in matches:
-            if m.distance < lowe_ratio*n.distance:
-                good.append(m)
-
-        print "Matches are found - %d/%d" % (len(good), self.min_count)
-        return len(good)
-        if len(good) > self.min_count:
-            src_pts = (np.float32([self.kp[m.queryIdx].pt for m in good])
-                       .reshape(-1, 1, 2))
-            dst_pts = (np.float32([kp2[m.trainIdx].pt for m in good])
-                       .reshape(-1, 1, 2))
-
-            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
-            try:
-                matchesMask = mask.ravel().tolist()
-                h, w, c = self.templ_img.shape
-                pts = (np.float32([[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]])
-                       .reshape(-1, 1, 2))
-                dst = cv2.perspectiveTransform(pts, M)
-
-            except:
-                print "Dumb error - %d/%d" % (len(good), self.min_count)
-                return None
-        else:
-            print "Not enough matches are found - %d/%d" % (len(good),
-                                                            self.min_count)
+        if not self.des.any():
+            print "MatchFinder: 1st descriptor empty"
             return None
+        elif des2 is None or not des2.any():
+            print "MatchFinder: 2st descriptor empty"
+            return None
+        else:
+            matches = self.flann.knnMatch(self.des, des2, k=2)
+
+            # store all the good matches as per Lowe's ratio test.
+            good = []
+            for m, n in matches:
+                if m.distance < lowe_ratio*n.distance:
+                    good.append(m)
+
+            print "Matches are found - %d/%d" % (len(good), self.min_count)
+
+            if len(good) > self.min_count:
+                src_pts = (np.float32([self.kp[m.queryIdx].pt for m in good])
+                           .reshape(-1, 1, 2))
+                dst_pts = (np.float32([kp2[m.trainIdx].pt for m in good])
+                           .reshape(-1, 1, 2))
+
+                M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+                try:
+                    matchesMask = mask.ravel().tolist()
+                    h, w, c = self.templ_img.shape
+                    pts = (np.float32([[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]])
+                           .reshape(-1, 1, 2))
+                    dst = cv2.perspectiveTransform(pts, M)
+
+                except:
+                    print "Dumb error - %d/%d" % (len(good), self.min_count)
+                    return None
+            else:
+                print "Not enough matches are found - %d/%d" % (len(good),
+                                                                self.min_count)
+                return None
 
         return kp2, matchesMask, dst, good, dst_pts
