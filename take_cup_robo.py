@@ -4,8 +4,10 @@ from controllers.cup_state import CupState
 from controllers.face_state import FaceState
 from controllers.nxt_controller import NxtController
 from sensors.webcam import Webcam, CupDetector, FaceDetector
+from sensors.ultrasonic import Ultrasonic
 from event import EventLoop
 from motors.pyrobot import Create
+
 import sys
 
 if __name__ == "__main__":
@@ -17,8 +19,10 @@ if __name__ == "__main__":
     f_s = FaceState(e, irobot_controller)
     cd = CupDetector(e, cam_angle=-25)
     fd = FaceDetector(e)
+    ud = Ultrasonic(e)
 
     e.register('webcam', Webcam(e, cam=1))
+    e.register('ultrasonic', ud)
     e.register('cd', cd, 'frame')
     e.register('fd', fd)  # We can see!
 
@@ -33,6 +37,7 @@ if __name__ == "__main__":
     e.register('f_s', f_s, 'cups_done')
     e.register('f_s', f_s, 'face_pos')
     e.register('f_s', f_s, 'face_gone')
+    e.register('f_s', f_s, 'no_cups_on_tray')
 
 
     e.run()

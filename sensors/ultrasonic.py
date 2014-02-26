@@ -1,4 +1,5 @@
 from collections import deque
+import serial
 import event
 
 class Ultrasonic(event.EventEmitter):
@@ -17,6 +18,7 @@ class Ultrasonic(event.EventEmitter):
             if len(self.history) == self.historyLength + 1:
                 self.history.popleft()
                 if self.history.count(False) > self.emitThreshold:
+                    print 'no_cups_on_tray'
                     self.emit('no_cups_on_tray')
 
     def cupInTray():

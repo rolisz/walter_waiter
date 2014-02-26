@@ -11,7 +11,7 @@ class NxtController(event.DecisionMaker):
         self.height_motor = motor.Motor(self.brick, motor.PORT_A)
         self.obstacle_detector = None # #todo also issue on how to listen to both event loop and to this
         super(NxtController, self).__init__(ev)
-    
+
     def run(self):
         try:
             self.motor.turn(10, 100)
@@ -35,4 +35,4 @@ class NxtController(event.DecisionMaker):
             self.motor.turn(10, 200)
         except motor.BlockedException:
             self.motor.idle()
-            self.emit('cup_released', True)
+        self.emit('cup_released', True)

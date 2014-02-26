@@ -41,6 +41,8 @@ class CupState(event.DecisionMaker):
 
         cup_pos = positions[self.cups_got]
         a, b, c = get_angles(*cup_pos)
+        self.l.setAngles(*self.init_angles)
+        self.sleep(1)
         self.l.setAngles(a, b, c, time=3)
         self.sleep(3)
         # Emit lego cup_over_tray
@@ -51,9 +53,10 @@ class CupState(event.DecisionMaker):
         self.cups_got += 1
         self.l.setAngles(*self.init_angles)
         self.sleep(1)
-        if self.cups_got == 1:
+        if self.cups_got == 2:
             self.ev.unregister(event='frame', name='cd')
             self.ev.register(event='frame', name='fd')
+            print 'emitting cups_done' # TODO: Haven't checked if this runs!!!
             self.emit('cups_done')
             self.l.setCam(30)
         self.cup = False
