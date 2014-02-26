@@ -1,4 +1,5 @@
 from event import DecisionMaker
+from Queue import Queue
 from sensors.pixels2coords import get_angle_from_pixels
 from time import sleep
 from threading import Timer
@@ -16,9 +17,17 @@ class FaceState(DecisionMaker):
 
         super(FaceState, self).__init__(ev)
 
+    def run(self):
+        while self.run_flag.is_set():
+            try:
+                event, value = self.queue.get(True, 4)
+                getattr(self, event)(value)
+            except Queue.Empty:
+                if self.state == 'finding':
+                    self.rotate()
+
     def cups_done(self, _):
         print 'cups done, finding faces now'
-        self.ev.register(event='frame', name='fd')
         self.ev.unregister(event='frame', name='td')
         self.status = 'finding'
 
@@ -28,7 +37,7 @@ class FaceState(DecisionMaker):
         self.controller.Stop()
 
     def face_pos(self, value):
-        if status in ['finding', 'tracking']:
+        if self.status in ['finding', 'tracking']:
             self.status = 'tracking'
             print('tracking face')
             angle = -get_angle_from_pixels(value[0] + value[2]/2.0)
@@ -54,16 +63,15 @@ class FaceState(DecisionMaker):
 
         if self.speed == 0:
             print 'now youre gone: ' + self.status
-            if status == 'done':
+            if self.status == 'done':
                 print "we're done, somebody forgot to unregister fd"
                 self.ev.unregister(event='frame', name='fd')
                 self.ev.register(event='frame', name='td')
                 return
-            elif status == 'tracking':
+            elif self.status == 'tracking':
                 print 'lost track of face:', face
                 if face[1] < 100:  # TODO: test
                     # We got to the face
-                    self.status = 'done, get the cup!'
                     self.sleep(5)
 
             # We lost the face, or we're done with

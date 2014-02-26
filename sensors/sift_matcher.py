@@ -52,7 +52,8 @@ class SIFTMatcher(object):
                            .reshape(-1, 1, 2))
                     dst = cv2.perspectiveTransform(pts, M)
 
-                except:
+                except Exception as e:
+                    print(e)
                     print "Dumb error - %d/%d" % (len(good), self.min_count)
                     return None
             else:

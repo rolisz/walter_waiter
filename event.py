@@ -85,7 +85,7 @@ class EventConsumer(Thread):
             except Queue.Empty:
                 try:
                     if event is not None:
-                        getattr(self, event)(value)
+                        self.queue.put((event, value))
                 except AttributeError:
                     print("Unfound attribute %s" % event)
                 break

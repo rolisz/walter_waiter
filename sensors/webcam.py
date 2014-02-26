@@ -142,7 +142,6 @@ class FaceDetector(event.DecisionMaker):
                 if distance_between_faces(self.face, distances[0][0]) < 50:
                     self.face, self.d_c = distances[0]
                 else:
-                    print '1'
                     self.emit('face_gone', self.face)
                     self.i -= 1
                     if self.i == 0:
@@ -152,7 +151,6 @@ class FaceDetector(event.DecisionMaker):
             self.emit('face_pos', tuple(x*2 for x in self.face))
             self.i = MAX_ITER
         elif self.face is not None:
-            print '2'
             self.emit('face_gone', self.face)
             self.i -= 1
             if self.i == 0:
@@ -167,12 +165,18 @@ class TableDetector(event.DecisionMaker):
         super(TableDetector, self).__init__(ev)
 
     def frame(self, frame):
-
-        kp2, matchesMask, dst, good, dst_pts =\
-                self.table_matcher.find_match(frame)
-
-        frame = cv2.drawKeypoints(frame,kp2,flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        height, width = frame.shape[:2]
+        frame = cv2.resize(frame, (3*width/4, 3*height/4))
+        result = self.table_matcher.find_match(frame)
+        if result is not None:
+            kp2, matchesMask, dst, good, dst_pts = result
+        else:
+            cv2.imshow('frame', frame)
+            self.sleep(0)
+            return
+        frame = cv2.polylines(frame,[np.int32(dst)],True, 255)
         cv2.imshow('frame', frame)
+        self.emit('table_pos', dst)
         self.sleep(0)
 
 class CupDetector(event.DecisionMaker):
