@@ -9,6 +9,7 @@ class NxtController(event.DecisionMaker):
         self.brick = nxt.locator.find_one_brick()
         self.motor = motor.Motor(self.brick, motor.PORT_B)
         self.height_motor = motor.Motor(self.brick, motor.PORT_A)
+        self.state = 'emitter'
         self.obstacle_detector = None # #todo also issue on how to listen to both event loop and to this
         super(NxtController, self).__init__(ev)
 
@@ -17,7 +18,20 @@ class NxtController(event.DecisionMaker):
             self.motor.turn(10, 100)
         except:
             pass
-        super(NxtController, self).run()
+        while self.run_flag.is_set():
+            if self.state == 'emitter':
+                value = self.sensor.do_measure()
+                if value < 50:
+                    self.emit('obstacle_detected')
+            try:
+                event, value = self.queue.get(True, 1)
+                if event == 'cups_done':
+                    self.state = 'emitter'
+                if event == 'cups_begin':
+                    self.state = 'mover'
+                getattr(self, event)(value)
+            except Queue.Empty:
+                pass
 
     def arm_aligned(self, _):
         try:
