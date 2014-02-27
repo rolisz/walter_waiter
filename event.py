@@ -5,6 +5,7 @@ from time import sleep
 
 class EventLoop(object):
 
+    @profile
     def __init__(self):
         self.registry = {}
         self.threads = {}
@@ -12,6 +13,7 @@ class EventLoop(object):
         self.run_flag = Event()
         self.run_flag.set()
 
+    @profile
     def register(self, name, thread_obj=None, event=None):
         """
         If called with two parameters, they should be event to listen to and
@@ -25,14 +27,17 @@ class EventLoop(object):
                 self.registry[event] = []
             self.registry[event].append(self.threads[name].add_event)
 
+    @profile
     def unregister(self, event, name):
         ev_thr = self.threads[name].add_event
         if ev_thr in self.registry[event]:
             self.registry[event].remove(ev_thr)
 
+    @profile
     def add_event(self, event, value):
         self.queue.put((event, value))
 
+    @profile
     def run(self):
         for name in self.threads:
             self.threads[name].start()
@@ -56,25 +61,29 @@ class EventLoop(object):
 
 
 class EventEmitter(Thread):
+    @profile
     def __init__(self, ev):
         self.ev = ev
         self.run_flag = ev.run_flag
         super(EventEmitter, self).__init__()
-
+    @profile
     def emit(self, event, values=None):
         self.ev.add_event(event, values)
 
 
 class EventConsumer(Thread):
+    @profile
     def __init__(self, flag=None):
         self.queue = Queue.Queue()
         if flag is not None:
             self.run_flag = flag
         super(EventConsumer, self).__init__()
 
+    @profile
     def add_event(self, event, value):
         self.queue.put((event, value))
 
+    @profile
     def sleep(self, time):
         sleep(time)
         event = None
@@ -89,7 +98,7 @@ class EventConsumer(Thread):
                 except AttributeError:
                     print("Unfound attribute %s" % event)
                 break
-
+    @profile
     def run(self):
         while self.run_flag.is_set():
             try:
@@ -98,13 +107,14 @@ class EventConsumer(Thread):
             except Queue.Empty:
                 pass
 
-
 class DecisionMaker(EventEmitter, EventConsumer):
+    @profile
     def __init__(self, ev):
         EventEmitter.__init__(self, ev)
         EventConsumer.__init__(self)
 
-if __name__ == '__main__':
+@profile
+def main():
     from time import sleep
     from random import random
 
@@ -142,3 +152,6 @@ if __name__ == '__main__':
     e.register('c3', Consumer(e.run_flag, 'c3'), 'event1')
 
     e.run()
+
+if __name__ == '__main__':
+    main()

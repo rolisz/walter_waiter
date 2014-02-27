@@ -36,7 +36,7 @@ class SIFTMatcher(object):
                 if m.distance < lowe_ratio*n.distance:
                     good.append(m)
 
-            print "Matches are found - %d/%d" % (len(good), self.min_count)
+            #print "Matches are found - %d/%d" % (len(good), self.min_count)
 
             if len(good) > self.min_count:
                 src_pts = (np.float32([self.kp[m.queryIdx].pt for m in good])
@@ -57,8 +57,8 @@ class SIFTMatcher(object):
                     print "Dumb error - %d/%d" % (len(good), self.min_count)
                     return None
             else:
-                print "Not enough matches are found - %d/%d" % (len(good),
-                                                                self.min_count)
+                #print "Not enough matches are found - %d/%d" % (len(good),
+                                                                #self.min_count)
                 return None
 
         return kp2, matchesMask, dst, good, dst_pts

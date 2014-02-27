@@ -39,5 +39,8 @@ if __name__ == "__main__":
     e.register('f_s', f_s, 'face_gone')
     e.register('f_s', f_s, 'no_cups_on_tray')
 
+    # Obstacle avoidance
+    e.register('n_c', n_c, 'obstacle_distance')  # Request
+    e.register('ts', ts, 'obstacle')
 
     e.run()

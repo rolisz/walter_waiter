@@ -12,6 +12,12 @@ class TableState(DecisionMaker):
 
         self.ev = ev
         self.speed = 0
+        self.stopping_frames = 0
+
+        # fast - going for the SIFT image
+        # park - sensor hit and we have to stop
+        self.state = 'fast'
+
         super(TableState, self).__init__(ev)
 
     def run(self):
@@ -20,31 +26,37 @@ class TableState(DecisionMaker):
                 event, value = self.queue.get(True, 1)
                 getattr(self, event)(value)
             except Queue.Empty:
-                self.speed=self.speed/2
+                self.speed=max(self.speed-50, 0) #self.speed/2
                 self.controller.DriveStraight(self.speed)
         self.controller.Stop()
 
 
     def faces_served(self, face):
         print "we need to find the table"
+        self.state = 'fast'
+        # TODO: complete transition (connect self to  )
 
     def table_pos(self, corners):
+        self.emit('obstacle_distance')
         print(corners)
         middle_x = (corners[0][0][0] + corners[2][0][0])/2
         # length_x = abs(corners[0][0][0] - corners[2][0][0])
         # length_y = abs(corners[1][0][1] - corners[3][0][1])
         # middle_y = (corners[1] + corners[3])/2
-
+        self.sleep(0)
         angle = get_angle_from_pixels(middle_x, axis_size=4*1280/5)
-        self.speed = min(self.speed + 10, 100)
+
+        if self.state == 'fast':
+            self.speed = min((self.speed + 50 ), 300)
         if abs(angle) < 5:
             self.controller.DriveStraight(self.speed)
+
         elif angle > 5:  # I have no ideea what I'm doing
-            self.controller.TurnInPlace(4*angle, 'cw')
+            self.controller.TurnInPlace(2.5 * min(angle, 40), 'cw')
             self.sleep(0.5)
             self.controller.Stop()
         else:
-            self.controller.TurnInPlace(4*angle, 'cw')
+            self.controller.TurnInPlace(2.5 * max(angle, -40), 'cw')
             self.sleep(0.5)
             self.controller.Stop()
 
@@ -52,3 +64,23 @@ class TableState(DecisionMaker):
         print(middle_x)
         print angle
 
+
+    def obstacle(self, distance):
+        print 'distance:', distance
+        if distance < 30:
+            self.stopping_frames += 1
+            print "\nTable is close! %d\n" % self.stopping_frames
+            self.speed = 0
+            if self.stopping_frames > 3:
+                self.state = 'park'
+                print 'parking'
+                self.controller.Stop()
+                self.ev.unregister(event='frame', name='ts')
+                self.ev.register(event='frame', name='fd')
+
+        elif distance <= 100:
+            self.state = 'park'
+            self.stopping_frames = 0
+            print 'slowing down'
+            self.speed = 50
+        self.controller.DriveStraight(self.speed)
