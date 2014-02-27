@@ -27,7 +27,9 @@ class Ultrasonic(event.EventEmitter):
     def cupInTray(self):
         duration = ''
         for i in range(10): # sometimes a null read is made, make another one
+            print 'trying to read'
             duration = self.serial_arduino.readline().strip() # read duration in ms for sound to travel to first object and back
+            print 'readed'
             if duration != '':
                 break
         if duration == '':
