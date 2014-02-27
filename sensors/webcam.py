@@ -224,9 +224,9 @@ class CupDetector(event.DecisionMaker):
                     print 'cd: Cup appeared: %s' % self.cup_color
                     self.emit('cup_appeared', coords_list[0])
                     self.frames_seen = 0
-        else:
-            print 'cd: Cups done: %s' % self.cup_color
-            self.emit('cups_done')
+        #else:
+            #print 'cd: Cups done: %s' % self.cup_color
+            #self.emit('cups_done')
         cv2.imshow('frame', frame)
 
 

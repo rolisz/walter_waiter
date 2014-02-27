@@ -13,12 +13,16 @@ class NxtController(event.DecisionMaker):
         self.obstacle_detector = sensor.Ultrasonic(self.brick, sensor.PORT_1)
         super(NxtController, self).__init__(ev)
 
+
     def run(self):
         try:
             self.motor.turn(10, 100)
-        except:
+        except e:
+            print 'Exception in nxt_controller: ', str(e)
             pass
+        print "trying to run"
         super(NxtController, self).run()
+
 
     def arm_aligned(self, _):
         try:
@@ -36,6 +40,8 @@ class NxtController(event.DecisionMaker):
             self.motor.turn(10, 200)
         except motor.BlockedException:
             self.motor.idle()
+            self.emit('cup_released', True)
+            return
         self.emit('cup_released', True)
 
     def obstacle_distance(self, _):

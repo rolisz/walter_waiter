@@ -12,14 +12,14 @@ import sys
 
 if __name__ == "__main__":
     e = EventLoop()
-    irobot_controller = Create()
-    irobot_controller.Control()
     c_s = CupState(e, cam_angle=-25)
-    n_c = NxtController(e)
-    f_s = FaceState(e, irobot_controller)
+    ud = Ultrasonic(e)
+    #f_s = FaceState(e, irobot_controller)
     cd = CupDetector(e, cam_angle=-25)
     fd = FaceDetector(e)
-    ud = Ultrasonic(e)
+    irobot_controller = Create()
+    irobot_controller.Control()
+    n_c = NxtController(e)
 
     e.register('webcam', Webcam(e, cam=1))
     e.register('ultrasonic', ud)
@@ -34,13 +34,13 @@ if __name__ == "__main__":
     e.register('c_s', c_s, 'cup_released')  # Arm may move to initial position
 
     # Events for face tracking and killing actions
-    e.register('f_s', f_s, 'cups_done')
-    e.register('f_s', f_s, 'face_pos')
-    e.register('f_s', f_s, 'face_gone')
-    e.register('f_s', f_s, 'no_cups_on_tray')
+    #e.register('f_s', f_s, 'cups_done')
+    #e.register('f_s', f_s, 'face_pos')
+    #e.register('f_s', f_s, 'face_gone')
+    #e.register('f_s', f_s, 'no_cups_on_tray')
 
     # Obstacle avoidance
     e.register('n_c', n_c, 'obstacle_distance')  # Request
-    e.register('ts', ts, 'obstacle')
+    #e.register('ts', ts, 'obstacle')
 
     e.run()

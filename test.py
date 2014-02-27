@@ -22,7 +22,7 @@ if __name__ == "__main__":
     e.register('ts', ts, 'table_pos')
 
     # Obstacle avoidance
+    e.register('ts', ts, 'obstacle')  # Response (ts)
     e.register('n_c', n_c, 'obstacle_distance')  # Request
-    e.register('ts', ts, 'obstacle')
 
     e.run()
