@@ -161,7 +161,7 @@ class FaceDetector(event.DecisionMaker):
 class TableDetector(event.DecisionMaker):
     def __init__(self, ev):
         self.ev = ev
-        self.table_matcher = SIFTMatcher(templ='haarcascades/table.png')
+        self.table_matcher = SIFTMatcher(templ='haarcascades/table.png', min_match_count=20)
         super(TableDetector, self).__init__(ev)
 
     def frame(self, frame):

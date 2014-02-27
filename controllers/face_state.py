@@ -1,5 +1,5 @@
 from event import DecisionMaker
-from Queue import Queue
+import Queue
 from sensors.pixels2coords import get_angle_from_pixels
 from time import sleep
 from threading import Timer
