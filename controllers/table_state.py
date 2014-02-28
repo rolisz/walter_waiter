@@ -30,7 +30,7 @@ class TableState(DecisionMaker):
                 getattr(self, event)(value)
             except Queue.Empty:
                 if self.state == 'searching':
-                    self.TurnInPlace(100, 'cw')
+                    self.controller.TurnInPlace(100, 'cw')
                     self.sleep(0.5)
                 else:
                     self.speed=max(self.speed-50, 0) #self.speed/2

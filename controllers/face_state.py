@@ -24,7 +24,7 @@ class FaceState(DecisionMaker):
                 event, value = self.queue.get(True, 1)
                 getattr(self, event)(value)
             except Queue.Empty:
-                if self.state == 'finding':
+                if self.status == 'finding':
                     self.rotate()
         self.controller.Stop()
 
