@@ -52,17 +52,33 @@ class TableState(DecisionMaker):
 
         if self.state == 'fast':
             self.speed = min((self.speed + 50 ), 300)
-        if abs(angle) < 5:
-            self.controller.DriveStraight(self.speed)
 
-        elif angle > 5:  # I have no ideea what I'm doing
-            self.controller.TurnInPlace(2.5 * min(angle, 40), 'cw')
-            self.sleep(0.5)
-            self.controller.Stop()
+        if length_left - length_right > 20:
+            diff = 10
+        elif length_right - length_left > 20:
+            diff = -10
         else:
-            self.controller.TurnInPlace(2.5 * max(angle, -40), 'cw')
+            diff = 0
+            if abs(angle) < 5:
+                self.controller.DriveStraight(self.speed)
+            elif angle > 5:
+                self.controller.TurnInPlace(2.5 * min(angle, 40), 'cw')
+            else:
+                self.controller.TurnInPlace(2.5 * max(angle, -40), 'cw')
             self.sleep(0.5)
             self.controller.Stop()
+            return
+
+        if angle > 0:
+            self.controller.TurnInPlace(2.5 * min(angle, 40) + diff, 'cw')
+        else:
+            self.controller.TurnInPlace(2.5 * max(angle, -40) + diff, 'cw')
+        self.sleep(0.5)
+        self.controller.DriveStraight(100)
+        self.sleep(1)
+        self.controller.TurnInPlace(diff*1.5, 'ccw')
+        self.sleep(0.5)
+        self.controller.Stop()
         #self.sleep(0)
         print("angle")
         print(middle_x)
