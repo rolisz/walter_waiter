@@ -1,7 +1,8 @@
 from event import DecisionMaker
-from sensors.pixels2coords import get_angle_from_pixels
 from time import sleep
+from math import sqrt
 from sensors.pixels2coords import get_angle_from_pixels
+
 import Queue
 
 class TableState(DecisionMaker):
@@ -38,7 +39,10 @@ class TableState(DecisionMaker):
 
     def table_pos(self, corners):
         self.emit('obstacle_distance')
-        print(corners)
+
+        length_right = sqrt((corners[0][0][0] - corners[3][0][0]) ** 2 + (corners[0][0][1] - corners[3][0][1])**2)
+        length_left = sqrt((corners[1][0][0] - corners[2][0][0]) ** 2 + (corners[1][0][1] - corners[2][0][1])**2)
+        print 'll = ', length_left, ', lr = ', length_right
         middle_x = (corners[0][0][0] + corners[2][0][0])/2
         # length_x = abs(corners[0][0][0] - corners[2][0][0])
         # length_y = abs(corners[1][0][1] - corners[3][0][1])
@@ -59,7 +63,7 @@ class TableState(DecisionMaker):
             self.controller.TurnInPlace(2.5 * max(angle, -40), 'cw')
             self.sleep(0.5)
             self.controller.Stop()
-
+        #self.sleep(0)
         print("angle")
         print(middle_x)
         print angle
@@ -76,7 +80,7 @@ class TableState(DecisionMaker):
                 print 'parking'
                 self.controller.Stop()
                 self.ev.unregister(event='frame', name='ts')
-                self.ev.register(event='frame', name='fd')
+                self.ev.register(event='frame', name='cd')
 
         elif distance <= 100:
             self.state = 'park'

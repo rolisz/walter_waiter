@@ -18,7 +18,6 @@ def distance_between_faces(face1, face2):
     return math.sqrt((x1 + w1/2.0 - x2 - w2/2.0)**2 +
                      (y1 + h1/2.0 - y2 - h2/2.0)**2)
 
-
 def distance_to_center(face, size=(640, 480)):
     """
     Get the distance from the center of the faces bounding box to the center of
@@ -175,7 +174,8 @@ class TableDetector(event.DecisionMaker):
             self.sleep(0)
             return
         frame = cv2.polylines(frame,[np.int32(dst)],True, 255)
-        cv2.imshow('frame', frame)
+        cv2.imshow('Table detector', cv2.resize(frame, dsize=None,
+                                              fx=0.5, fy=0.5))
         self.emit('table_pos', dst)
         self.sleep(0)
 
@@ -227,7 +227,9 @@ class CupDetector(event.DecisionMaker):
         #else:
             #print 'cd: Cups done: %s' % self.cup_color
             #self.emit('cups_done')
-        cv2.imshow('frame', frame)
+
+        cv2.imshow('Cup detector', cv2.resize(frame, dsize=0,
+                                              fx=0.5, fy=0.5))
 
 
 if __name__ == "__main__":

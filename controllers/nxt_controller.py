@@ -17,7 +17,7 @@ class NxtController(event.DecisionMaker):
     def run(self):
         try:
             self.motor.turn(10, 100)
-        except e:
+        except Exception as e:
             print 'Exception in nxt_controller: ', str(e)
             pass
         print "trying to run"
