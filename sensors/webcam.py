@@ -1,12 +1,10 @@
 import numpy as np
 import itertools
 import cv2
-import random
 from time import sleep
 import os
 import math
 import event
-from Queue import Empty
 from color_matcher import ColorMatcher
 from sensors.sift_matcher import SIFTMatcher
 from pixels2coords import pixels2coords, get_distance_from_cup_width
@@ -228,13 +226,7 @@ class CupDetector(event.DecisionMaker):
             #print 'cd: Cups done: %s' % self.cup_color
             #self.emit('cups_done')
 
-        cv2.imshow('Cup detector', cv2.resize(frame, dsize=0,
+        cv2.imshow('Cup detector', cv2.resize(frame, dsize=None,
                                               fx=0.5, fy=0.5))
 
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
-    import mock
-    f = FaceRecognizer(mock.Mock(), 1)
-    f.run()

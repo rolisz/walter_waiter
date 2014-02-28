@@ -7,7 +7,6 @@ class FaceState(DecisionMaker):
 
     def __init__(self, ev, controller):
         self.controller = controller
-        self.controller.Control()
         self.ev = ev
         self.speed = 0
 
