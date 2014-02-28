@@ -1,8 +1,6 @@
 from event import DecisionMaker
 import Queue
 from sensors.pixels2coords import get_angle_from_pixels
-from time import sleep
-from threading import Timer
 
 
 class FaceState(DecisionMaker):
@@ -13,6 +11,9 @@ class FaceState(DecisionMaker):
         self.ev = ev
         self.speed = 0
 
+        # done
+        # finding
+        # tracking
         self.status = 'done'
 
         super(FaceState, self).__init__(ev)
@@ -20,16 +21,17 @@ class FaceState(DecisionMaker):
     def run(self):
         while self.run_flag.is_set():
             try:
-                event, value = self.queue.get(True, 4)
+                event, value = self.queue.get(True, 1)
                 getattr(self, event)(value)
             except Queue.Empty:
                 if self.state == 'finding':
                     self.rotate()
+        self.controller.Stop()
 
     def cups_done(self, _):
         print 'cups done, finding faces now'
-        self.ev.unregister(event='frame', name='td')
         self.status = 'finding'
+        self.rotate()
 
     def rotate(self):
         self.controller.TurnInPlace(20, 'cw')  # maybe turn random amount
@@ -52,9 +54,6 @@ class FaceState(DecisionMaker):
             self.sleep(0)
         else:
             print "we're done, somebody forgot to unregister fd"
-            self.ev.unregister(event='frame', name='fd')
-            self.ev.register(event='frame', name='td')
-            return
 
     def face_gone(self, face):
         # Slow down
@@ -65,8 +64,6 @@ class FaceState(DecisionMaker):
             print 'now youre gone: ' + self.status
             if self.status == 'done':
                 print "we're done, somebody forgot to unregister fd"
-                self.ev.unregister(event='frame', name='fd')
-                self.ev.register(event='frame', name='td')
                 return
             elif self.status == 'tracking':
                 print 'lost track of face:', face
@@ -83,4 +80,4 @@ class FaceState(DecisionMaker):
         self.ev.register(event='frame', name='td')
         self.status = 'done'
         print 'faces served'
-        self.emit('faces_served')
+        self.emit('faces_done')

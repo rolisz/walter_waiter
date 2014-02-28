@@ -1,14 +1,13 @@
 from get_angles import get_angles
-from time import sleep
-from motors import lynx_motion
 import event
 
 
 class CupState(event.DecisionMaker):
 
-    def __init__(self, ev, cam_angle=-30):
+    def __init__(self, ev, lynx, cam_angle=-30):
         self.cam_angle = cam_angle
         self.ev = ev
+        self.l = lynx
         self.cups_got = 0
         self.cup = False
         self.init_angles = (77, 20, 62)
@@ -16,10 +15,15 @@ class CupState(event.DecisionMaker):
 
     def run(self):
         # Move to initial position
-        self.l = lynx_motion.Arm()
         self.l.setAngles(*self.init_angles)
         self.l.setCam(self.cam_angle)
         super(CupState, self).run()
+
+    def cup_start(self, _):
+        self.l.setAngles(*self.init_angles)
+        self.l.setCam(self.cam_angle)
+        self.cups_got = 0
+        self.cup = False
 
     def cup_appeared(self, coords):
         if self.cup:

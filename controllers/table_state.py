@@ -8,16 +8,18 @@ import Queue
 class TableState(DecisionMaker):
 
 
-    def __init__(self, ev, controller):
+    def __init__(self, ev, lynx, controller):
+        self.lynx = lynx
         self.controller = controller
 
         self.ev = ev
         self.speed = 0
         self.stopping_frames = 0
 
+        # searching - still looking for image
         # fast - going for the SIFT image
         # park - sensor hit and we have to stop
-        self.state = 'fast'
+        self.state = 'searching'
 
         super(TableState, self).__init__(ev)
 
@@ -27,27 +29,30 @@ class TableState(DecisionMaker):
                 event, value = self.queue.get(True, 1)
                 getattr(self, event)(value)
             except Queue.Empty:
-                self.speed=max(self.speed-50, 0) #self.speed/2
-                self.controller.DriveStraight(self.speed)
+                if self.state == 'searching':
+                    self.TurnInPlace(100, 'cw')
+                    self.sleep(0.5)
+                else:
+                    self.speed=max(self.speed-50, 0) #self.speed/2
+                    self.controller.DriveStraight(self.speed)
         self.controller.Stop()
 
-
-    def faces_served(self, face):
-        print "we need to find the table"
-        self.state = 'fast'
-        # TODO: complete transition (connect self to  )
+    def faces_done(self, face):
+        self.state = 'searching'
+        self.lynx.setCam(-10)
 
     def table_pos(self, corners):
+        if self.state == 'searching':
+            self.state = 'fast'
+
         self.emit('obstacle_distance')
 
-        length_right = sqrt((corners[0][0][0] - corners[3][0][0]) ** 2 + (corners[0][0][1] - corners[3][0][1])**2)
-        length_left = sqrt((corners[1][0][0] - corners[2][0][0]) ** 2 + (corners[1][0][1] - corners[2][0][1])**2)
+        length_right = sqrt((corners[0][0][0] - corners[3][0][0])**2 +
+                            (corners[0][0][1] - corners[3][0][1])**2)
+        length_left = sqrt((corners[1][0][0] - corners[2][0][0])**2 +
+                           (corners[1][0][1] - corners[2][0][1])**2)
         print 'll = ', length_left, ', lr = ', length_right
         middle_x = (corners[0][0][0] + corners[2][0][0])/2
-        # length_x = abs(corners[0][0][0] - corners[2][0][0])
-        # length_y = abs(corners[1][0][1] - corners[3][0][1])
-        # middle_y = (corners[1] + corners[3])/2
-        self.sleep(0)
         angle = get_angle_from_pixels(middle_x, axis_size=4*1280/5)
 
         if self.state == 'fast':
@@ -93,9 +98,11 @@ class TableState(DecisionMaker):
             self.speed = 0
             if self.stopping_frames > 3:
                 self.state = 'park'
+
                 print 'parking'
                 self.controller.Stop()
-                self.ev.unregister(event='frame', name='ts')
+                self.emit('cup_start')
+                self.ev.unregister(event='frame', name='td')
                 self.ev.register(event='frame', name='cd')
 
         elif distance <= 100:
