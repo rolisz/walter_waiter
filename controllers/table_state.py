@@ -32,15 +32,16 @@ class TableState(DecisionMaker):
                 if self.state == 'searching':
                     self.controller.TurnInPlace(100, 'cw')
                     self.sleep(0.5)
+                    self.controller.Stop()
                 else:
-                    self.speed=max(self.speed-50, 0) #self.speed/2
+                    self.speed = max(self.speed - 50, 0) #self.speed/2
                     self.controller.DriveStraight(self.speed)
         self.controller.Stop()
 
     def faces_done(self, face):
         self.state = 'searching'
         self.lynx.setCam(-10)
-        self.ev.unregister(event='faces_done', name='t_s')
+        self.ev.unregister(event='no_cups_on_tray', name='f_s')
 
     def table_pos(self, corners):
         if self.state == 'searching':

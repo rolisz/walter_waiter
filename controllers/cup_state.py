@@ -32,7 +32,7 @@ class CupState(event.DecisionMaker):
             self.cup = True
         angles = get_angles(coords[0]-10, -coords[1]+50)
         self.l.setAngles(*angles)  # shouldn't there be a time here as well?
-        self.sleep(2)
+        self.sleep(1)
         # Emit arm_aligned
         print 'Arm: arm_aligned'
         self.emit('arm_aligned', coords)
@@ -46,11 +46,11 @@ class CupState(event.DecisionMaker):
         cup_pos = positions[self.cups_got]
         a, b, c = get_angles(*cup_pos)
         self.l.setAngles(*self.init_angles)
-        self.sleep(1)
-        self.l.setAngles(a, b, c, time=3)
-        self.sleep(3)
+        self.sleep(2)
+        self.l.setAngles(a, b, c, time=2)
+        self.sleep(2)
         # Emit lego cup_over_tray
-        self.emit('cup_over_tray', (50, -200))
+        self.emit('cup_over_tray', cup_pos)
         print 'Cup over tray'
 
     def cup_released(self, _):

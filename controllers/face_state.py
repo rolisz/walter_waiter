@@ -29,7 +29,7 @@ class FaceState(DecisionMaker):
 
     def cups_done(self, _):
         print 'cups done, finding faces now'
-        self.ev.register(event='faces_done', name='t_s')
+        self.ev.register(event='no_cups_on_tray', name='f_s')
         self.status = 'finding'
         self.rotate()
 
