@@ -40,6 +40,7 @@ class TableState(DecisionMaker):
     def faces_done(self, face):
         self.state = 'searching'
         self.lynx.setCam(-10)
+        self.ev.unregister(event='faces_done', name='t_s')
 
     def table_pos(self, corners):
         if self.state == 'searching':
