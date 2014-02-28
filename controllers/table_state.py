@@ -6,11 +6,9 @@ from sensors.pixels2coords import get_angle_from_pixels
 import Queue
 
 class TableState(DecisionMaker):
-
-
-    def __init__(self, ev, lynx, controller):
+    def __init__(self, ev, lynx, nxt, irobot):
         self.lynx = lynx
-        self.controller = controller
+        self.irobot = irobot
 
         self.ev = ev
         self.speed = 0
@@ -23,25 +21,6 @@ class TableState(DecisionMaker):
 
         super(TableState, self).__init__(ev)
 
-
-    def sleep(self, time):
-        sleep(time)
-        event = None
-        value = None
-        obstacle_value = None
-        while True:
-            try:
-                event, value = self.queue.get(False)
-                if event == 'obstacle':
-                    obstacle_value = value
-            except Queue.Empty:
-                try:
-                    if obstacle_value is not None:
-                        self.queue.put(('obstacle', obstacle_value))
-                except AttributeError:
-                    print("Unfound attribute %s" % event)
-                break
-
     def run(self):
         while self.run_flag.is_set():
             try:
@@ -49,14 +28,14 @@ class TableState(DecisionMaker):
                 getattr(self, event)(value)
             except Queue.Empty:
                 if self.state == 'searching':
-                    self.controller.TurnInPlace(100, 'cw')
+                    self.irobot.TurnInPlace(100, 'cw')
                     self.sleep(0.5)
-                    self.controller.Stop()
+                    self.irobot.Stop()
                     self.sleep(1)
                 else:
                     self.speed = max(self.speed - 50, 0) #self.speed/2
-                    self.controller.DriveStraight(self.speed)
-        self.controller.Stop()
+                    self.irobot.DriveStraight(self.speed)
+        self.irobot.Stop()
 
     def faces_done(self, face):
         self.state = 'searching'
@@ -67,7 +46,7 @@ class TableState(DecisionMaker):
         if self.state == 'searching':
             self.state = 'fast'
 
-        self.emit('obstacle_distance')
+        self.checkObstacle()
 
         length_right = sqrt((corners[0][0][0] - corners[3][0][0])**2 +
                             (corners[0][0][1] - corners[3][0][1])**2)
@@ -87,33 +66,35 @@ class TableState(DecisionMaker):
         else:
             diff = 0
             if abs(angle) < 5:
-                self.controller.DriveStraight(self.speed)
+                self.irobot.DriveStraight(self.speed)
             elif angle > 5:
-                self.controller.TurnInPlace(2.5 * min(angle, 40), 'cw')
+                self.irobot.TurnInPlace(2.5 * min(angle, 40), 'cw')
             else:
-                self.controller.TurnInPlace(2.5 * max(angle, -40), 'cw')
+                self.irobot.TurnInPlace(2.5 * max(angle, -40), 'cw')
             self.sleep(0.5)
-            self.controller.Stop()
+            self.irobot.Stop()
             return
 
         if angle > 0:
-            self.controller.TurnInPlace(2.5 * min(angle, 40) + diff, 'cw')
+            self.irobot.TurnInPlace(2.5 * min(angle, 40) + diff, 'cw')
         else:
-            self.controller.TurnInPlace(2.5 * max(angle, -40) + diff, 'cw')
+            self.irobot.TurnInPlace(2.5 * max(angle, -40) + diff, 'cw')
         self.sleep(0.5)
-        self.controller.DriveStraight(100)
+        self.irobot.DriveStraight(100)
         self.sleep(1)
-        self.controller.TurnInPlace(diff*1.5, 'ccw')
+        self.irobot.TurnInPlace(diff*1.5, 'ccw')
         self.sleep(0.5)
-        self.controller.Stop()
+        self.irobot.Stop()
         #self.sleep(0)
         print("angle")
         print(middle_x)
         print angle
 
 
-    def obstacle(self, distance):
+    def checkObstacle(self):
+        distance = self.nxt.getObstacleDistance()
         print 'distance:', distance
+
         if distance < 30:
             self.stopping_frames += 1
             print "\nTable is close! %d\n" % self.stopping_frames
@@ -122,7 +103,7 @@ class TableState(DecisionMaker):
                 self.state = 'park'
 
                 print 'parking'
-                self.controller.Stop()
+                self.irobot.Stop()
                 self.emit('cup_start')
                 self.ev.unregister(event='frame', name='td')
                 self.ev.register(event='frame', name='cd')
@@ -132,4 +113,4 @@ class TableState(DecisionMaker):
             self.stopping_frames = 0
             print 'slowing down'
             self.speed = 50
-        self.controller.DriveStraight(self.speed)
+        self.irobot.DriveStraight(self.speed)

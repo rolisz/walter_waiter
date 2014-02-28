@@ -4,10 +4,11 @@ import event
 
 class CupState(event.DecisionMaker):
 
-    def __init__(self, ev, lynx, cam_angle=-30):
+    def __init__(self, ev, lynx, nxt, cam_angle=-30):
         self.cam_angle = cam_angle
         self.ev = ev
         self.l = lynx
+        self.nxt = nxt
         self.cups_got = 0
         self.cup = False
         self.init_angles = (77, 20, 62)
@@ -17,6 +18,7 @@ class CupState(event.DecisionMaker):
         # Move to initial position
         self.l.setAngles(*self.init_angles)
         self.l.setCam(self.cam_angle)
+        self.nxt.release()
         super(CupState, self).run()
 
     def cup_start(self, _):
@@ -33,14 +35,13 @@ class CupState(event.DecisionMaker):
         angles = get_angles(coords[0]-10, -coords[1]+50)
         self.l.setAngles(*angles)  # shouldn't there be a time here as well?
         self.sleep(1)
-        # Emit arm_aligned
-        print 'Arm: arm_aligned'
-        self.emit('arm_aligned', coords)
+        self.nxt.grasp()
+        self.moveOnTray()
 
-    def cup_grasped(self, _):
+    def moveOnTray(self):
         # Positions for cups, in the order to avoid collisions
-        positions = [(0, -270),
-                     (100, -200) # TODO: test
+        positions = [(-20, -270),
+                     (80, -200) # TODO: test
                      ]
 
         cup_pos = positions[self.cups_got]
@@ -49,11 +50,10 @@ class CupState(event.DecisionMaker):
         self.sleep(2)
         self.l.setAngles(a, b, c, time=2)
         self.sleep(2)
-        # Emit lego cup_over_tray
-        self.emit('cup_over_tray', cup_pos)
-        print 'Cup over tray'
+        self.nxt.release()
+        self.cup_released()
 
-    def cup_released(self, _):
+    def cup_released(self):
         self.cups_got += 1
         self.l.setAngles(*self.init_angles)
         self.sleep(1)

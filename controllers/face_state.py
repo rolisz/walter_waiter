@@ -5,8 +5,8 @@ from sensors.pixels2coords import get_angle_from_pixels
 
 class FaceState(DecisionMaker):
 
-    def __init__(self, ev, controller):
-        self.controller = controller
+    def __init__(self, ev, irobot):
+        self.irobot = irobot
         self.ev = ev
         self.speed = 0
 
@@ -25,7 +25,7 @@ class FaceState(DecisionMaker):
             except Queue.Empty:
                 if self.status == 'finding':
                     self.rotate()
-        self.controller.Stop()
+        self.irobot.Stop()
 
     def cups_done(self, _):
         print 'cups done, finding faces now'
@@ -34,9 +34,9 @@ class FaceState(DecisionMaker):
         self.rotate()
 
     def rotate(self):
-        self.controller.TurnInPlace(50, 'cw')  # maybe turn random amount
+        self.irobot.TurnInPlace(50, 'cw')  # maybe turn random amount
         self.sleep(1)
-        self.controller.Stop()
+        self.irobot.Stop()
 
     def face_pos(self, value):
         if self.status in ['finding', 'tracking']:
@@ -46,11 +46,11 @@ class FaceState(DecisionMaker):
             print(angle)
             self.speed = min(self.speed + 10, 150)
             if abs(angle) < 5:
-                self.controller.DriveStraight(self.speed)
+                self.irobot.DriveStraight(self.speed)
             elif angle > 5:  # I have no ideea what I'm doing
-                self.controller.Drive(self.speed, 25 - angle)
+                self.irobot.Drive(self.speed, 25 - angle)
             else:
-                self.controller.Drive(self.speed, -25 - angle)
+                self.irobot.Drive(self.speed, -25 - angle)
             self.sleep(0)
         else:
             print "we're done, somebody forgot to unregister fd"
@@ -58,7 +58,7 @@ class FaceState(DecisionMaker):
     def face_gone(self, face):
         # Slow down
         self.speed = max(self.speed - 20, 0)
-        self.controller.DriveStraight(self.speed)
+        self.irobot.DriveStraight(self.speed)
 
         if self.speed == 0:
             print 'now youre gone: ' + self.status
