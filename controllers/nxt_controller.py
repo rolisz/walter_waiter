@@ -46,4 +46,5 @@ class NxtController(event.DecisionMaker):
 
     def obstacle_distance(self, _):
         distance = self.obstacle_detector.get_distance()
+        print("nxt distance", distance)
         self.emit('obstacle', distance)

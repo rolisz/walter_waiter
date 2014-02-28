@@ -34,7 +34,7 @@ class FaceState(DecisionMaker):
         self.rotate()
 
     def rotate(self):
-        self.controller.TurnInPlace(20, 'cw')  # maybe turn random amount
+        self.controller.TurnInPlace(50, 'cw')  # maybe turn random amount
         self.sleep(1)
         self.controller.Stop()
 

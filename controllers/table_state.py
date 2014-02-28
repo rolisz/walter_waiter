@@ -23,6 +23,25 @@ class TableState(DecisionMaker):
 
         super(TableState, self).__init__(ev)
 
+
+    def sleep(self, time):
+        sleep(time)
+        event = None
+        value = None
+        obstacle_value = None
+        while True:
+            try:
+                event, value = self.queue.get(False)
+                if event == 'obstacle':
+                    obstacle_value = value
+            except Queue.Empty:
+                try:
+                    if obstacle_value is not None:
+                        self.queue.put(('obstacle', obstacle_value))
+                except AttributeError:
+                    print("Unfound attribute %s" % event)
+                break
+
     def run(self):
         while self.run_flag.is_set():
             try:
@@ -33,6 +52,7 @@ class TableState(DecisionMaker):
                     self.controller.TurnInPlace(100, 'cw')
                     self.sleep(0.5)
                     self.controller.Stop()
+                    self.sleep(1)
                 else:
                     self.speed = max(self.speed - 50, 0) #self.speed/2
                     self.controller.DriveStraight(self.speed)
@@ -40,7 +60,7 @@ class TableState(DecisionMaker):
 
     def faces_done(self, face):
         self.state = 'searching'
-        self.lynx.setCam(-10)
+        self.lynx.setCam(-15)
         self.ev.unregister(event='no_cups_on_tray', name='f_s')
 
     def table_pos(self, corners):
@@ -61,9 +81,9 @@ class TableState(DecisionMaker):
             self.speed = min((self.speed + 50 ), 300)
 
         if length_left - length_right > 20:
-            diff = 10
+            diff = 20
         elif length_right - length_left > 20:
-            diff = -10
+            diff = -20
         else:
             diff = 0
             if abs(angle) < 5:

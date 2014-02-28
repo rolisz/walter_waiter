@@ -59,6 +59,7 @@ class CupState(event.DecisionMaker):
         self.sleep(1)
         if self.cups_got == 2:
             self.ev.unregister(event='frame', name='cd')
+            self.sleep(0)
             self.ev.register(event='frame', name='fd')
             print 'emitting cups_done' # TODO: Haven't checked if this runs!!!
             self.emit('cups_done')

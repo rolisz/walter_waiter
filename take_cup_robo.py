@@ -16,7 +16,7 @@ if __name__ == "__main__":
     lynx = lynx_motion.Arm()
     c_s = CupState(e, lynx, cam_angle=-25)
     ud = Ultrasonic(e)
-    irobot_controller = Create()
+    irobot_controller = Create("/dev/ttyUSB1")
     irobot_controller.Control()
     f_s = FaceState(e, irobot_controller)
     t_s = TableState(e, lynx, irobot_controller)
@@ -52,5 +52,7 @@ if __name__ == "__main__":
     # Obstacle avoidance
     e.register('n_c', n_c, 'obstacle_distance')  # Request
     e.register('t_s', t_s, 'obstacle')
+
+    e.add_event('faces_done', None)
 
     e.run()
