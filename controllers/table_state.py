@@ -54,7 +54,7 @@ class TableState(DecisionMaker):
         if self.state == 'searching':
             self.state = 'fast'
 
-        self.checkObstacle()
+        obstacle = self.checkObstacle()
 
         length_left, length_right, middle_x = computeStuff(corners)
         angle = get_angle_from_pixels(middle_x, axis_size=4*1280/5)
@@ -70,21 +70,16 @@ class TableState(DecisionMaker):
             diff = 30
         elif length_right - length_left > 20:
             diff = -30
+
         angle += diff
 
         if abs(angle) < 13:
             self.irobot.DriveStraight(self.speed)
         else:
-            self.irobot.TurnInPlace(angle, 'cw')
-        self.sleep(0.5)
-        self.irobot.Stop()
+            self.irobot.TurnInPlace(angle, 'cw')        
 
-        if angle > 0:
-            self.irobot.TurnInPlace(2.5 * min(angle, 40) + diff, 'cw')
-        else:
-            self.irobot.TurnInPlace(2.5 * max(angle, -40) + diff, 'cw')
         self.sleep(0.5)
-        self.irobot.DriveStraight(100)
+        self.irobot.DriveStraight(speed)
         self.sleep(1)
         self.irobot.TurnInPlace(diff, 'ccw')
         self.sleep(0.5)
@@ -115,4 +110,4 @@ class TableState(DecisionMaker):
             self.state = 'park'
             self.stopping_frames = 0
             print 'slowing down'
-            self.speed = 60
+            self.speed = 50
