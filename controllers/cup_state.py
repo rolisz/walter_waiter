@@ -69,4 +69,5 @@ class CupState(event.DecisionMaker):
             self.emit('cups_done')
             self.l.setCam(30)
             self.sleep(0)
-        self.cup = False
+        else:
+            self.cup = False

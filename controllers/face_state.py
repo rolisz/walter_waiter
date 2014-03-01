@@ -38,8 +38,8 @@ class FaceState(DecisionMaker):
         self.rotate()
 
     def rotate(self):
-        self.irobot.TurnInPlace(100, 'cw')  # maybe turn random amount
-        self.sleep(1)
+        self.irobot.TurnInPlace(80, 'cw')  # maybe turn random amount
+        self.sleep(2)
         self.irobot.Stop()
 
     def face_pos(self, value):
