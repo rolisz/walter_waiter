@@ -42,7 +42,7 @@ class TableState(DecisionMaker):
         self.lynx.setCam(0)
         self.ev.unregister(event='no_cups_on_tray', name='f_s')
 
-    def computeStuff(corners):
+    def computeStuff(self, corners):
         length_right = sqrt((corners[0][0][0] - corners[3][0][0])**2 +
                             (corners[0][0][1] - corners[3][0][1])**2)
         length_left = sqrt((corners[1][0][0] - corners[2][0][0])**2 +
@@ -55,28 +55,28 @@ class TableState(DecisionMaker):
             self.state = 'fast'
 
         obstacle = self.checkObstacle()
-
-        length_left, length_right, middle_x = computeStuff(corners)
-        angle = get_angle_from_pixels(middle_x, axis_size=4*1280/5)
-        if angle > 0:
-            angle = 2.5 * min(angle, 40)
-        else:
-            angle = 2.5 * max(angle, -40)
-
+        diff = 0
         if self.state == 'fast':
             self.speed = min((self.speed + 50 ), 300)
 
+        length_left, length_right, middle_x = self.computeStuff(corners)
+        angle = get_angle_from_pixels(middle_x, axis_size=4*1280/5)
+        if angle > 0:
+            angle = min(angle, 40)
+        else:
+            angle = max(angle, -40)
+
         if length_left - length_right > 20:
-            diff = 30
+            diff = 15
         elif length_right - length_left > 20:
-            diff = -30
+            diff = -15
 
         angle += diff
 
-        if abs(angle) < 13:
+        if abs(angle) < 5:
             self.irobot.DriveStraight(self.speed)
         else:
-            self.irobot.TurnInPlace(angle, 'cw')        
+            self.irobot.TurnInPlace(2.5 * angle, 'cw')        
 
         self.sleep(0.5)
         self.irobot.DriveStraight(speed)
