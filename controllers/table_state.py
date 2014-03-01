@@ -28,7 +28,7 @@ class TableState(DecisionMaker):
             except Queue.Empty:
                 if self.state == 'searching':
                     self.irobot.TurnInPlace(100, 'cw')
-                    self.sleep(0.5)
+                    self.sleep(1)
                     self.irobot.Stop()
                     self.sleep(1)
                 else:
@@ -100,4 +100,4 @@ class TableState(DecisionMaker):
             return True
         elif distance <= 100:
             self.state = 'park'
-            self.speed = max(self.speed - 40, 0)
+            self.speed = max(self.speed - 30, 50)

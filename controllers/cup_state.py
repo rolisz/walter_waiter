@@ -71,3 +71,4 @@ class CupState(event.DecisionMaker):
             self.sleep(0)
         else:
             self.cup = False
+        self.sleep(0)

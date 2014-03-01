@@ -1,4 +1,5 @@
 from event import DecisionMaker
+from time import sleep
 import Queue
 from sensors.pixels2coords import get_angle_from_pixels
 
@@ -20,12 +21,29 @@ class FaceState(DecisionMaker):
     def run(self):
         while self.run_flag.is_set():
             try:
-                event, value = self.queue.get(True, 1)
+                event, value = self.queue.get(True, 2)
                 getattr(self, event)(value)
             except Queue.Empty:
                 if self.status == 'finding':
                     self.rotate()
         self.irobot.Stop()
+
+
+    def sleep(self, time):
+        sleep(time)
+        event = None
+        value = None
+        while True:
+            try:
+                event, value = self.queue.get(False)
+            except Queue.Empty:
+                try:
+                    if event is not None:
+                        self.queue.put((event, value))
+                except AttributeError:
+                    print("Unfound attribute %s" % event)
+                break
+
 
     def cups_done(self, _):
         self.sleep(1)
@@ -33,14 +51,20 @@ class FaceState(DecisionMaker):
         self.ev.register(event='no_cups_on_tray', name='f_s')
         self.status = 'finding'
         self.irobot.DriveStraight(-100)
-        self.sleep(1)
+        self.irobot.DriveStraight(-100)
+        sleep(3)
         self.irobot.Stop()
-        self.rotate()
+        self.rotate(10)
+        self.sleep(0)
 
-    def rotate(self):
-        self.irobot.TurnInPlace(80, 'cw')  # maybe turn random amount
-        self.sleep(2)
+    def rotate(self, amount = 1.5):
+        self.irobot.TurnInPlace(100, 'cw')  # maybe turn random amount
+        print "bef sleep"
+        sleep(amount)
+        print "after sleep"
         self.irobot.Stop()
+        print "after stop"
+        self.sleep(0)
 
     def face_pos(self, value):
         if self.status in ['finding', 'tracking']:

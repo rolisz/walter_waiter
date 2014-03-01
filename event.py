@@ -97,11 +97,11 @@ class EventConsumer(Thread):
             try:
                 event, value = self.queue.get(False)
             except Queue.Empty:
-                try:
-                    if event is not None:
-                        self.queue.put((event, value))
-                except AttributeError:
-                    print("Unfound attribute %s" % event)
+                #try:
+                #    if event is not None:
+                #        self.queue.put((event, value))
+                #except AttributeError:
+                #    print("Unfound attribute %s" % event)
                 break
 
     def run(self):
