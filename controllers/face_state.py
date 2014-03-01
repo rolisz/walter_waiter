@@ -15,6 +15,7 @@ class FaceState(DecisionMaker):
         # finding
         # tracking
         self.status = 'done'
+        self.rotated = False
 
         super(FaceState, self).__init__(ev)
 
@@ -39,6 +40,7 @@ class FaceState(DecisionMaker):
             except Queue.Empty:
                 try:
                     if event is not None:
+                        print "putting event", event
                         self.queue.put((event, value))
                 except AttributeError:
                     print("Unfound attribute %s" % event)
@@ -51,19 +53,19 @@ class FaceState(DecisionMaker):
         self.ev.register(event='no_cups_on_tray', name='f_s')
         self.status = 'finding'
         self.irobot.DriveStraight(-100)
-        self.irobot.DriveStraight(-100)
         sleep(3)
         self.irobot.Stop()
-        self.rotate(10)
+        self.rotate(2)
         self.sleep(0)
 
-    def rotate(self, amount = 1.5):
+    def rotate(self, amount = 1):
         self.irobot.TurnInPlace(100, 'cw')  # maybe turn random amount
         print "bef sleep"
         sleep(amount)
         print "after sleep"
         self.irobot.Stop()
         print "after stop"
+        self.rotated = True
         self.sleep(0)
 
     def face_pos(self, value):
@@ -79,7 +81,7 @@ class FaceState(DecisionMaker):
                 self.irobot.Drive(self.speed, 25 - angle)
             else:
                 self.irobot.Drive(self.speed, -25 - angle)
-            self.sleep(0)
+            self.rotated = False
         else:
             print "we're done, somebody forgot to unregister fd"
 
@@ -88,7 +90,7 @@ class FaceState(DecisionMaker):
         self.speed = max(self.speed - 20, 0)
         self.irobot.DriveStraight(self.speed)
 
-        if self.speed == 0:
+        if self.speed == 0 and not self.rotated:
             print 'now youre gone: ' + self.status
             if self.status == 'done':
                 print "we're done, somebody forgot to unregister fd"

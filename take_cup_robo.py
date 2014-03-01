@@ -30,9 +30,10 @@ if __name__ == "__main__":
 
     e.register('webcam', Webcam(e, cam=1))
     e.register('ultrasonic', ud)
-    e.register('td', td, 'frame')
+    # e.register('td', td, 'frame')
+    e.register('td', td)
     e.register('cd', cd)
-    e.register('fd', fd)  # We can see!
+    e.register('fd', fd, 'frame')  # We can see!
 
     # Events for cup taking actions
     e.register('c_s', c_s, 'cup_start')
@@ -48,6 +49,6 @@ if __name__ == "__main__":
     e.register('t_s', t_s, 'faces_done')
     e.register('t_s', t_s, 'table_pos')
 
-    e.add_event('faces_done', None)
+    e.add_event('cups_done', None)
 
     e.run()

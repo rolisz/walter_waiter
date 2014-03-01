@@ -16,7 +16,7 @@ class TableState(DecisionMaker):
         # searching - still looking for image
         # fast - going for the SIFT image
         # park - sensor hit and we have to stop
-        self.state = 'searching'
+        self.state = ''
 
         super(TableState, self).__init__(ev)
 
@@ -26,20 +26,22 @@ class TableState(DecisionMaker):
                 event, value = self.queue.get(True, 1)
                 getattr(self, event)(value)
             except Queue.Empty:
+                print 'table state: ', self.state
                 if self.state == 'searching':
                     self.irobot.TurnInPlace(100, 'cw')
                     self.sleep(1)
                     self.irobot.Stop()
                     self.sleep(1)
-                else:
+                elif self.state != '':
                     self.speed = max(self.speed - 50, 0)
                     self.irobot.DriveStraight(self.speed)
         self.irobot.Stop()
 
     def faces_done(self, face):
-        self.sleep(1)
+        print 'what'
         self.state = 'searching'
         self.lynx.setCam(0)
+        self.sleep(1)
         self.ev.unregister(event='no_cups_on_tray', name='f_s')
 
     def logo_properties(self, corners):
@@ -89,7 +91,7 @@ class TableState(DecisionMaker):
         print 'distance:', distance
 
         if distance < 30:
-            self.state = 'park'
+            self.state = ''
             print 'parking'
             self.speed = 0
             self.irobot.Stop()
