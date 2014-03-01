@@ -42,38 +42,42 @@ class TableState(DecisionMaker):
         self.lynx.setCam(0)
         self.ev.unregister(event='no_cups_on_tray', name='f_s')
 
+    def computeStuff(corners):
+        length_right = sqrt((corners[0][0][0] - corners[3][0][0])**2 +
+                            (corners[0][0][1] - corners[3][0][1])**2)
+        length_left = sqrt((corners[1][0][0] - corners[2][0][0])**2 +
+                           (corners[1][0][1] - corners[2][0][1])**2)
+        middle_x = (corners[0][0][0] + corners[2][0][0])/2
+        return length_right, length_left, middle_x
+
     def table_pos(self, corners):
         if self.state == 'searching':
             self.state = 'fast'
 
         self.checkObstacle()
 
-        length_right = sqrt((corners[0][0][0] - corners[3][0][0])**2 +
-                            (corners[0][0][1] - corners[3][0][1])**2)
-        length_left = sqrt((corners[1][0][0] - corners[2][0][0])**2 +
-                           (corners[1][0][1] - corners[2][0][1])**2)
-        print 'll = ', length_left, ', lr = ', length_right
-        middle_x = (corners[0][0][0] + corners[2][0][0])/2
+        length_left, length_right, middle_x = computeStuff(corners)
         angle = get_angle_from_pixels(middle_x, axis_size=4*1280/5)
+        if angle > 0:
+            angle = 2.5 * min(angle, 40)
+        else:
+            angle = 2.5 * max(angle, -40)
 
         if self.state == 'fast':
             self.speed = min((self.speed + 50 ), 300)
 
         if length_left - length_right > 20:
-            diff = 20
+            diff = 30
         elif length_right - length_left > 20:
-            diff = -20
+            diff = -30
+        angle += diff
+
+        if abs(angle) < 13:
+            self.irobot.DriveStraight(self.speed)
         else:
-            diff = 0
-            if abs(angle) < 5:
-                self.irobot.DriveStraight(self.speed)
-            elif angle > 5:
-                self.irobot.TurnInPlace(2.5 * min(angle, 40), 'cw')
-            else:
-                self.irobot.TurnInPlace(2.5 * max(angle, -40), 'cw')
-            self.sleep(0.5)
-            self.irobot.Stop()
-            return
+            self.irobot.TurnInPlace(angle, 'cw')
+        self.sleep(0.5)
+        self.irobot.Stop()
 
         if angle > 0:
             self.irobot.TurnInPlace(2.5 * min(angle, 40) + diff, 'cw')
@@ -82,10 +86,9 @@ class TableState(DecisionMaker):
         self.sleep(0.5)
         self.irobot.DriveStraight(100)
         self.sleep(1)
-        self.irobot.TurnInPlace(diff*1.5, 'ccw')
+        self.irobot.TurnInPlace(diff, 'ccw')
         self.sleep(0.5)
         self.irobot.Stop()
-        #self.sleep(0)
         print("angle")
         print(middle_x)
         print angle
@@ -112,5 +115,4 @@ class TableState(DecisionMaker):
             self.state = 'park'
             self.stopping_frames = 0
             print 'slowing down'
-            self.speed = 50
-        self.irobot.DriveStraight(self.speed)
+            self.speed = 60
