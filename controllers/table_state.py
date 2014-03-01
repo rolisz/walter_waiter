@@ -38,6 +38,7 @@ class TableState(DecisionMaker):
         self.irobot.Stop()
 
     def faces_done(self, face):
+        self.sleep(1)
         self.state = 'searching'
         self.lynx.setCam(0)
         self.ev.unregister(event='no_cups_on_tray', name='f_s')
@@ -76,10 +77,10 @@ class TableState(DecisionMaker):
         if abs(angle) < 5:
             self.irobot.DriveStraight(self.speed)
         else:
-            self.irobot.TurnInPlace(2.5 * angle, 'cw')        
+            self.irobot.TurnInPlace(2.5 * angle, 'cw')
 
         self.sleep(0.5)
-        self.irobot.DriveStraight(speed)
+        self.irobot.DriveStraight(self.speed)
         self.sleep(1)
         self.irobot.TurnInPlace(diff, 'ccw')
         self.sleep(0.5)
@@ -105,6 +106,7 @@ class TableState(DecisionMaker):
                 self.emit('cup_start')
                 self.ev.unregister(event='frame', name='td')
                 self.ev.register(event='frame', name='cd')
+                self.sleep(0)
 
         elif distance <= 60:
             self.state = 'park'

@@ -21,6 +21,7 @@ class CupState(event.DecisionMaker):
         super(CupState, self).run()
 
     def cup_start(self, _):
+        self.sleep(0)
         self.l.setAngles(*self.init_angles)
         self.l.setCam(self.cam_angle)
         self.cups_got = 0
@@ -35,8 +36,9 @@ class CupState(event.DecisionMaker):
         self.l.setAngles(*angles)  # shouldn't there be a time here as well?
         self.sleep(1)
         self.nxt.grasp()
-        self.nxt.moveUp()
+        self.nxt.moveUp(1000)
         self.moveOnTray()
+        self.sleep(0)
 
     def moveOnTray(self):
         # Positions for cups, in the order to avoid collisions
@@ -50,8 +52,9 @@ class CupState(event.DecisionMaker):
         self.sleep(2)
         self.l.setAngles(a, b, c, time=2)
         self.sleep(2)
-        self.nxt.moveDown()
+        self.nxt.moveDown(3000)
         self.nxt.release()
+        self.nxt.moveUp(2000)
         self.cup_released()
 
     def cup_released(self):
@@ -65,4 +68,5 @@ class CupState(event.DecisionMaker):
             print 'emitting cups_done' # TODO: Haven't checked if this runs!!!
             self.emit('cups_done')
             self.l.setCam(30)
+            self.sleep(0)
         self.cup = False

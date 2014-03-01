@@ -28,13 +28,17 @@ class FaceState(DecisionMaker):
         self.irobot.Stop()
 
     def cups_done(self, _):
+        self.sleep(1)
         print 'cups done, finding faces now'
         self.ev.register(event='no_cups_on_tray', name='f_s')
         self.status = 'finding'
+        self.irobot.DriveStraight(-100)
+        self.sleep(1)
+        self.irobot.Stop()
         self.rotate()
 
     def rotate(self):
-        self.irobot.TurnInPlace(200, 'cw')  # maybe turn random amount
+        self.irobot.TurnInPlace(100, 'cw')  # maybe turn random amount
         self.sleep(1)
         self.irobot.Stop()
 

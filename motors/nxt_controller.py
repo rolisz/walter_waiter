@@ -10,11 +10,11 @@ class NxtController():
         self.height_motor = motor.Motor(self.brick, motor.PORT_A)
         self.obstacle_detector = sensor.Ultrasonic(self.brick, sensor.PORT_1)
 
-    def moveUp(self):
-        self.height_motor.turn(-127, 5000, brake=False)
+    def moveUp(self, value=2000):
+        self.height_motor.turn(-127, value, brake=False)
 
-    def moveDown(self):
-        self.height_motor.turn(127, 5000, brake=False)
+    def moveDown(self, value=2000):
+        self.height_motor.turn(127, value, brake=False)
 
     def grasp(self):
         try:

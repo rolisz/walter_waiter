@@ -25,13 +25,16 @@ class EventLoop(object):
         if event is not None:
             if event not in self.registry:
                 self.registry[event] = []
-            self.registry[event].append(self.threads[name].add_event)
+            if self.threads[name].add_event not in self.registry[event]:
+                self.registry[event].append(self.threads[name].add_event)
 
 
     def unregister(self, event, name):
         ev_thr = self.threads[name].add_event
+        print('unregister', event, name, ev_thr, self.registry[event])
         if ev_thr in self.registry[event]:
             self.registry[event].remove(ev_thr)
+            print(self.registry[event])
 
 
     def add_event(self, event, value):
@@ -44,6 +47,8 @@ class EventLoop(object):
         while True:
             try:
                 event, value = self.queue.get(True, 20)
+                if event == 'unregister':
+                    self.unregister(*value)
                 if event not in self.registry:
                     print("Invalid event encountered %s with values %r!" %
                           (event, value))
@@ -131,15 +136,19 @@ def main():
                 sleep(random())
 
     class Consumer(EventConsumer):
-        def __init__(self, flag, i):
+        def __init__(self, ev, i):
             self.i = i
-            super(Consumer, self).__init__(flag)
+            self.ev = ev
+            super(Consumer, self).__init__(ev.run_flag)
 
         def event1(self, value):
-            print('event1', value)
+            print('event1', value, self.i)
 
         def event2(self, value):
-            print('event2', value)
+            print('event2', value, self.i)
+            if value == 10:
+                self.ev.unregister('event1', 'c3')
+                # self.ev.add_event('unregister', ('event1', 'c3'))
 
     e = EventLoop()
 
@@ -147,9 +156,10 @@ def main():
     e.register("p2", Producer(e, 'event1'))
     e.register("p3", Producer(e, 'event2'))
 
-    e.register('c1', Consumer(e.run_flag, 'c1'), 'event1')
-    e.register('c2', Consumer(e.run_flag, 'c2'), 'event2')
-    e.register('c3', Consumer(e.run_flag, 'c3'), 'event1')
+    e.register('c1', Consumer(e, 'c1'), 'event1')
+    e.register('c2', Consumer(e, 'c2'), 'event2')
+    e.register('c3', Consumer(e, 'c3'), 'event1')
+
 
     e.run()
 
