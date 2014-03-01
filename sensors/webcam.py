@@ -213,15 +213,16 @@ class CupDetector(event.DecisionMaker):
             cv2.putText(frame, '%0.2f %0.2f %0.2f' % coords, (x, y-50),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),
                         thickness=2)
-            coords_list.append(coords)
-        coords_list.sort()
-        if len(contours):
             if x > 0 and X < frame.shape[1]:
+                coords_list.append(coords)
+            coords_list.sort()
+            for x, y, z in coords_list:
                 self.frames_seen = min(self.frames_seen + 1, 20)
-                if self.frames_seen == 20 and coords_list[0][0] < 400:
+                if self.frames_seen == 20 and x < 400:
                     print 'cd: Cup appeared: %s' % self.cup_color
-                    self.emit('cup_appeared', coords_list[0])
+                    self.emit('cup_appeared', (x, y, z))
                     self.frames_seen = 0
+                    break
         #else:
             #print 'cd: Cups done: %s' % self.cup_color
             #self.emit('cups_done')

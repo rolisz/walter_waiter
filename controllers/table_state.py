@@ -12,7 +12,6 @@ class TableState(DecisionMaker):
         self.nxt = nxt
         self.ev = ev
         self.speed = 0
-        self.stopping_frames = 0
 
         # searching - still looking for image
         # fast - going for the SIFT image
@@ -33,7 +32,7 @@ class TableState(DecisionMaker):
                     self.irobot.Stop()
                     self.sleep(1)
                 else:
-                    self.speed = max(self.speed - 50, 0) #self.speed/2
+                    self.speed = max(self.speed - 50, 0)
                     self.irobot.DriveStraight(self.speed)
         self.irobot.Stop()
 
@@ -43,7 +42,7 @@ class TableState(DecisionMaker):
         self.lynx.setCam(0)
         self.ev.unregister(event='no_cups_on_tray', name='f_s')
 
-    def computeStuff(self, corners):
+    def logo_properties(self, corners):
         length_right = sqrt((corners[0][0][0] - corners[3][0][0])**2 +
                             (corners[0][0][1] - corners[3][0][1])**2)
         length_left = sqrt((corners[1][0][0] - corners[2][0][0])**2 +
@@ -55,61 +54,50 @@ class TableState(DecisionMaker):
         if self.state == 'searching':
             self.state = 'fast'
 
-        obstacle = self.checkObstacle()
-        diff = 0
+        is_blocked = self.checkObstacle()
+
+        if is_blocked:
+            return
+
         if self.state == 'fast':
             self.speed = min((self.speed + 50 ), 300)
 
-        length_left, length_right, middle_x = self.computeStuff(corners)
+        length_left, length_right, middle_x = self.logo_properties(corners)
         angle = get_angle_from_pixels(middle_x, axis_size=4*1280/5)
         if angle > 0:
             angle = min(angle, 40)
         else:
             angle = max(angle, -40)
 
-        if length_left - length_right > 20:
-            diff = 15
-        elif length_right - length_left > 20:
-            diff = -15
-
-        angle += diff
-
         if abs(angle) < 5:
             self.irobot.DriveStraight(self.speed)
         else:
             self.irobot.TurnInPlace(2.5 * angle, 'cw')
-
-        self.sleep(0.5)
-        self.irobot.DriveStraight(self.speed)
-        self.sleep(1)
-        self.irobot.TurnInPlace(diff, 'ccw')
-        self.sleep(0.5)
-        self.irobot.Stop()
+            self.sleep(1)
+            self.irobot.Stop()
         print("angle")
         print(middle_x)
         print angle
 
 
     def checkObstacle(self):
-        distance = self.nxt.getObstacleDistance()
+        values = []
+        for i in range(5):
+            values.append(self.nxt.getObstacleDistance())
+            sleep(0.02)
+        distance = sum(values)/5.0
         print 'distance:', distance
 
         if distance < 30:
-            self.stopping_frames += 1
-            print "\nTable is close! %d\n" % self.stopping_frames
-            self.speed = 0
-            if self.stopping_frames > 3:
-                self.state = 'park'
-
-                print 'parking'
-                self.irobot.Stop()
-                self.emit('cup_start')
-                self.ev.unregister(event='frame', name='td')
-                self.ev.register(event='frame', name='cd')
-                self.sleep(0)
-
-        elif distance <= 60:
             self.state = 'park'
-            self.stopping_frames = 0
-            print 'slowing down'
-            self.speed = 50
+            print 'parking'
+            self.speed = 0
+            self.irobot.Stop()
+            self.emit('cup_start')
+            self.ev.unregister(event='frame', name='td')
+            self.ev.register(event='frame', name='cd')
+            self.sleep(0)
+            return True
+        elif distance <= 100:
+            self.state = 'park'
+            self.speed = max(self.speed - 40, 0)
