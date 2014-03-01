@@ -2,10 +2,10 @@
 
 from controllers.cup_state import CupState
 from controllers.face_state import FaceState
-from controllers.nxt_controller import NxtController
 from controllers.table_state import TableState
 from sensors.webcam import Webcam, CupDetector, FaceDetector, TableDetector
 from motors import lynx_motion
+from motors.nxt_controller import NxtController
 from sensors.ultrasonic import Ultrasonic
 from event import EventLoop
 from motors.pyrobot import Create
@@ -13,8 +13,9 @@ from motors.pyrobot import Create
 
 if __name__ == "__main__":
     e = EventLoop()
-    
+
     lynx = lynx_motion.Arm()
+
     nxt = NxtController()
     irobot_controller = Create("/dev/ttyUSB1")
     irobot_controller.Control()

@@ -17,7 +17,6 @@ class CupState(event.DecisionMaker):
     def run(self):
         # Move to initial position
         self.l.setAngles(*self.init_angles)
-        self.l.setCam(self.cam_angle)
         self.nxt.release()
         super(CupState, self).run()
 
@@ -36,6 +35,7 @@ class CupState(event.DecisionMaker):
         self.l.setAngles(*angles)  # shouldn't there be a time here as well?
         self.sleep(1)
         self.nxt.grasp()
+        self.nxt.moveUp()
         self.moveOnTray()
 
     def moveOnTray(self):
@@ -50,6 +50,7 @@ class CupState(event.DecisionMaker):
         self.sleep(2)
         self.l.setAngles(a, b, c, time=2)
         self.sleep(2)
+        self.nxt.moveDown()
         self.nxt.release()
         self.cup_released()
 

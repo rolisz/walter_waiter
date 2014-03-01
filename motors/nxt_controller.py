@@ -4,7 +4,7 @@ import nxt.sensor as sensor
 
 
 class NxtController():
-    def __init__(self, ev):
+    def __init__(self):
         self.brick = nxt.locator.find_one_brick()
         self.motor = motor.Motor(self.brick, motor.PORT_B)
         self.height_motor = motor.Motor(self.brick, motor.PORT_A)

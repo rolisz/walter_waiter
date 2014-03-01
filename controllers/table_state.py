@@ -9,7 +9,7 @@ class TableState(DecisionMaker):
     def __init__(self, ev, lynx, nxt, irobot):
         self.lynx = lynx
         self.irobot = irobot
-
+        self.nxt = nxt
         self.ev = ev
         self.speed = 0
         self.stopping_frames = 0
@@ -39,7 +39,7 @@ class TableState(DecisionMaker):
 
     def faces_done(self, face):
         self.state = 'searching'
-        self.lynx.setCam(-15)
+        self.lynx.setCam(0)
         self.ev.unregister(event='no_cups_on_tray', name='f_s')
 
     def table_pos(self, corners):
@@ -108,7 +108,7 @@ class TableState(DecisionMaker):
                 self.ev.unregister(event='frame', name='td')
                 self.ev.register(event='frame', name='cd')
 
-        elif distance <= 100:
+        elif distance <= 60:
             self.state = 'park'
             self.stopping_frames = 0
             print 'slowing down'
