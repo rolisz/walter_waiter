@@ -22,7 +22,7 @@ if __name__ == "__main__":
     ud = Ultrasonic(e)
 
     c_s = CupState(e, lynx, nxt, cam_angle=-25)
-    f_s = FaceState(e, irobot_controller)
+    f_s = FaceState(e, lynx, irobot_controller)
     t_s = TableState(e, lynx, nxt, irobot_controller)
     cd = CupDetector(e, cam_angle=-25)
     fd = FaceDetector(e)
@@ -30,10 +30,11 @@ if __name__ == "__main__":
 
     e.register('webcam', Webcam(e, cam=1))
     e.register('ultrasonic', ud)
-    # e.register('td', td, 'frame')
-    e.register('td', td)
+    e.register('td', td, 'frame')
+    # e.register('td', td)
     e.register('cd', cd)
-    e.register('fd', fd, 'frame')  # We can see!
+    e.register('fd', fd)  # We can see!
+    # e.register('fd', fd, 'frame')  # We can see!
 
     # Events for cup taking actions
     e.register('c_s', c_s, 'cup_start')
@@ -49,6 +50,7 @@ if __name__ == "__main__":
     e.register('t_s', t_s, 'faces_done')
     e.register('t_s', t_s, 'table_pos')
 
-    e.add_event('cups_done', None)
+    # e.add_event('cups_done', None)
+    e.add_event('faces_done', None)
 
     e.run()

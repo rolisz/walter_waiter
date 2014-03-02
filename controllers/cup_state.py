@@ -67,7 +67,6 @@ class CupState(event.DecisionMaker):
             self.ev.register(event='frame', name='fd')
             print 'emitting cups_done' # TODO: Haven't checked if this runs!!!
             self.emit('cups_done')
-            self.l.setCam(30)
             self.sleep(0)
         else:
             self.cup = False

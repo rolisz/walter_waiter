@@ -6,8 +6,9 @@ from sensors.pixels2coords import get_angle_from_pixels
 
 class FaceState(DecisionMaker):
 
-    def __init__(self, ev, irobot):
+    def __init__(self, ev, lynx, irobot):
         self.irobot = irobot
+        self.lynx = lynx
         self.ev = ev
         self.speed = 0
 
@@ -48,6 +49,7 @@ class FaceState(DecisionMaker):
 
 
     def cups_done(self, _):
+        self.lynx.setCam(30)
         self.sleep(1)
         print 'cups done, finding faces now'
         self.ev.register(event='no_cups_on_tray', name='f_s')
@@ -74,7 +76,10 @@ class FaceState(DecisionMaker):
             print('tracking face')
             angle = -get_angle_from_pixels(value[0] + value[2]/2.0)
             print(angle)
-            self.speed = min(self.speed + 10, 150)
+            if self.speed == 0:
+                self.speed = 40
+            self.speed = min(self.speed + 20, 150)
+            print(self.speed)
             if abs(angle) < 5:
                 self.irobot.DriveStraight(self.speed)
             elif angle > 5:  # I have no ideea what I'm doing
@@ -87,8 +92,9 @@ class FaceState(DecisionMaker):
 
     def face_gone(self, face):
         # Slow down
-        self.speed = max(self.speed - 20, 0)
+        self.speed = max(self.speed - 15, 0)
         self.irobot.DriveStraight(self.speed)
+        self.rotated = False
 
         if self.speed == 0 and not self.rotated:
             print 'now youre gone: ' + self.status
@@ -103,7 +109,6 @@ class FaceState(DecisionMaker):
 
             # We lost the face, or we're done with
             self.status = 'finding'
-            self.rotate()
 
     def no_cups_on_tray(self, _):
         self.ev.unregister(event='frame', name='fd')

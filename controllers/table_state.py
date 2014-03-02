@@ -16,7 +16,7 @@ class TableState(DecisionMaker):
         # searching - still looking for image
         # fast - going for the SIFT image
         # park - sensor hit and we have to stop
-        self.state = ''
+        self.state = 'inactive'
 
         super(TableState, self).__init__(ev)
 
@@ -32,7 +32,7 @@ class TableState(DecisionMaker):
                     self.sleep(1)
                     self.irobot.Stop()
                     self.sleep(1)
-                elif self.state != '':
+                elif self.state != 'inactive':
                     self.speed = max(self.speed - 50, 0)
                     self.irobot.DriveStraight(self.speed)
         self.irobot.Stop()
@@ -90,8 +90,8 @@ class TableState(DecisionMaker):
         distance = sum(values)/5.0
         print 'distance:', distance
 
-        if distance < 30:
-            self.state = ''
+        if distance < 28:
+            self.state = 'inactive'
             print 'parking'
             self.speed = 0
             self.irobot.Stop()

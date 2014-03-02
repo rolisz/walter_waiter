@@ -31,7 +31,10 @@ class Ultrasonic(event.EventEmitter):
                 break
         if duration == '':
             return False
-        cm = int(duration) / 29 / 2 # convert to cm
+        try:
+            cm = int(duration) / 29 / 2 # convert to cm
+        except ValueError:
+            return False
         if cm < self.trayLength:
             return True
         return False
