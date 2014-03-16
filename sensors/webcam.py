@@ -110,22 +110,9 @@ class FaceDetector(event.DecisionMaker):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         faces = list(self.face_cascade.detectMultiScale(gray, 1.3, 5))
-        face2 = self.profile_cascade.detectMultiScale(gray, 1.3, 5)
-        faces.extend(face2)
+
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        cv2.imshow('faces', frame)
-        non_dup = set()
-        for f1, f2 in itertools.combinations(faces, 2):
-            if common_area(f1, f2) > 0.5:
-                non_dup.add(tuple(f1))
-            else:
-                non_dup.add(tuple(f1))
-                non_dup.add(tuple(f2))
-        if len(non_dup) > 0:
-            faces = non_dup
-        elif len(faces):
-            faces = [tuple(faces[0])]
 
         if len(faces):
             distances = sorted([(face, distance_to_center(face,
@@ -144,14 +131,19 @@ class FaceDetector(event.DecisionMaker):
                     if self.i == 0:
                         self.face = None
                     self.sleep(0)
+                    cv2.imshow('faces', frame)
                     return
             self.emit('face_pos', tuple(x*2 for x in self.face))
+            x, y, w, h = self.face
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.imshow('faces', frame)
             self.i = MAX_ITER
         elif self.face is not None:
             self.emit('face_gone', self.face)
             self.i -= 1
             if self.i == 0:
                 self.face = None
+            cv2.imshow('faces', frame)
         self.sleep(0)
 
 
